@@ -2,7 +2,6 @@ import axios from 'axios';
 
 import History from '../models/history.model.js';
 import WatchList from '../models/watchList.model.js';
-import Movie from '../models/movie.model.js';
 import { getOrCreateMovie } from '../utils/movieUtils.js';
 import { TMDB_BASE_URL, TMDB_KEY } from '../config/env.js';
 
@@ -43,8 +42,9 @@ export const addWatchedMovie = async (req, res) => {
 
     const tmdbMovie = results[0];
 
-    const movieData = await getOrCreateMovie(title);
     if (!movieData) return res.status(404).json({ success: false, message: 'Movie not found in TMDb' });
+
+    const movieData = await getOrCreateMovie(title);
 
     const historyExists = await History.findOne({ userId, movieId: tmdbMovie.id });
     if (historyExists) {
