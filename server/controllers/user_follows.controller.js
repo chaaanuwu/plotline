@@ -48,7 +48,7 @@ export const followUser = async (req, res) => {
         const userId = req.user.userId;
         const { followingId } = req.body;
 
-        if (userId === followingId) {
+        if (String(userId) === String(followingId)) {
             return res.status(400).json({
                 success: false,
                 error: "You cannot follow yourself"

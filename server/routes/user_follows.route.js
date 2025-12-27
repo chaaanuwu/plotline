@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import authorize from '../middlewares/auth.middleware';
-import { followUser, getFollowers, getFollowing, unfollowUser } from '../controllers/user_follows.controller';
+import authorize from '../middlewares/auth.middleware.js';
+import { followUser, getFollowers, getFollowing, unfollowUser } from '../controllers/user_follows.controller.js';
 
 const followRouter = Router();
 
