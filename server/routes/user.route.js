@@ -7,8 +7,7 @@ const userRouter = Router();
 
 userRouter.get('/me', authorize, getUserMe);
 
-userRouter.get('/me/edit', authorize, getUserMe);
-userRouter.put('/me/edit', authorize, editProfile);
+userRouter.put('/me', authorize, editProfile);
 
 userRouter.get('/:userId', authorize, getUser);
 
