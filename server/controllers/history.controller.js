@@ -14,7 +14,7 @@ export const getWatchedMovies = async (req, res) => {
 
     const movies = await History.find({ userId })
       .sort({ watchedAt: -1 })
-      .populate('movie');
+      .populate('movieId', 'title posterPath releaseDate');
 
     res.status(200).json({ success: true, data: movies });
   } catch (error) {
@@ -42,9 +42,9 @@ export const addWatchedMovie = async (req, res) => {
 
     const tmdbMovie = results[0];
 
-    if (!movieData) return res.status(404).json({ success: false, message: 'Movie not found in TMDb' });
-
     const movieData = await getOrCreateMovie(title);
+
+    if (!movieData) return res.status(404).json({ success: false, message: 'Movie not found in TMDb' });
 
     const historyExists = await History.findOne({ userId, movieId: tmdbMovie.id });
     if (historyExists) {

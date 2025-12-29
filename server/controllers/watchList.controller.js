@@ -1,4 +1,3 @@
-import axios from 'axios';
 import WatchList from '../models/watchList.model.js';
 import History from '../models/history.model.js';
 import { getOrCreateMovie } from '../utils/movieUtils.js';
@@ -9,7 +8,7 @@ export const getWatchListMovie = async (req, res) => {
     const userId = req.user.userId;
 
     const movie = await WatchList.findOne({ userId, movieId }).populate(
-      'movie',
+      'movieId',
       'title posterPath banner genreNames overview releaseDate'
     );
 
@@ -36,7 +35,7 @@ export const getWatchListMovies = async (req, res) => {
 
     const movies = await WatchList.find({ userId })
       .sort({ createdAt: -1 })
-      .populate('movie', 'title posterPath banner genreNames overview releaseDate');
+      .populate('movieId', 'title posterPath banner genreNames overview releaseDate');
 
     res.status(200).json({
       success: true,
@@ -53,16 +52,16 @@ export const addWatchListMovie = async (req, res) => {
     const userId = req.user.userId;
     const { title } = req.body;
 
-    const existingWatchList = await WatchList.findOne({ userId }).populate('movie');
-    if (existingWatchList && existingWatchList.movie.title === title) {
+    const existingWatchList = await WatchList.findOne({ userId }).populate('movieId');
+    if (existingWatchList && existingWatchList.movieId.title === title) {
       return res.status(409).json({
         success: false,
         message: 'Movie already exists in watch list'
       });
     }
 
-    const historyExists = await History.findOne({ userId }).populate('movie');
-    if (historyExists && historyExists.movie.title === title) {
+    const historyExists = await History.findOne({ userId }).populate('movieId');
+    if (historyExists && historyExists.movieId.title === title) {
       return res.status(409).json({
         success: false,
         message: 'Movie already exists in watched list'
@@ -79,7 +78,7 @@ export const addWatchListMovie = async (req, res) => {
 
     const watchListMovie = await WatchList.create({
       userId,
-      movie: movieData._id
+      movieId: movieData._id
     });
 
     res.status(201).json({
@@ -99,7 +98,7 @@ export const removeWatchListMovie = async (req, res) => {
     const { movieId } = req.params;
     const userId = req.user.userId;
 
-    const movie = await WatchList.findOneAndDelete({ movie: movieId, userId });
+    const movie = await WatchList.findOneAndDelete({ movieId, userId });
 
     if (!movie) {
       return res.status(404).json({
