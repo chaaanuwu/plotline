@@ -15,7 +15,7 @@ watchListRouter.get('/', authorize, getWatchListMovies);
 
 watchListRouter.post('/', authorize, addWatchListMovie);
 
-watchListRouter.get('/movie/:movieId', authorize, getWatchListMovie);
+// watchListRouter.get('/movie/:movieId', authorize, getWatchListMovie);
 
 watchListRouter.delete('/movie/:movieId', authorize, removeWatchListMovie);
 

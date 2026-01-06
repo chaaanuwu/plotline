@@ -79,7 +79,7 @@ export const followUser = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            follower
+            follower,
         });
 
     } catch (error) {
