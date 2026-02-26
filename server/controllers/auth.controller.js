@@ -90,7 +90,7 @@ export const signIn = async (req, res, next) => {
             message: "User logged in successfully",
             data: {
                 token,
-                user
+                user: { ...user._doc, password: undefined }
             }
         });
 
