@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from "cors";
 
 import { PORT, BASE_URL } from './config/env.js';
 import connectToDatabase from './database/mongodb.js';
@@ -12,6 +13,12 @@ import reviewRouter from './routes/review.route.js';
 import commentRouter from './routes/comment.route.js';
 
 const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173", // allow your React frontend
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true // if you’re sending cookies
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false}));
