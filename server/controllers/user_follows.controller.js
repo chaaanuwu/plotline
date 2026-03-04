@@ -1,16 +1,29 @@
 import userFollows from "../models/user_follows.model.js";
 
+export const getFollowersData = async (userId) => {
+    try {
+        return await userFollows.find({ followingId: userId }).populate("followerId", "firstName lastName"); 
+    } catch (error) {
+        console.error("getFollowersData error:", error);
+        throw new Error("Failed to fetch followers");
+    }
+};
+
+export const getFollowingData = async (userId) => {
+    try {
+        return await userFollows.find({ followerId: userId }).populate("followingId", "firstName lastName");
+    } catch (error) {
+        console.error("Get following data error: ", error);
+        throw new Error("Failed to fetch following");
+    }
+};
+
 export const getFollowers = async (req, res) => {
     try {
-        const userId = req.user.userId;
-
-        const followers = await userFollows.find({ followingId: userId }).populate("followerId", "firstName lastName");
-
-        const followersCount = followers.length;
+        const followers = await getFollowersData(userId);
 
         res.status(200).json({
             success: true,
-            followersCount,
             followers
         });
 
@@ -24,14 +37,10 @@ export const getFollowers = async (req, res) => {
 
 export const getFollowing = async (req, res) => {
     try {
-        const userId = req.user.userId;
-        const following = await userFollows.find({ followerId: userId }).populate("followingId", "firstName lastName");
-
-        const followingCount = following.length;
+        const following = await getFollowingData(userId);
 
         res.status(200).json({
             success: true,
-            followingCount,
             following
         });
 
