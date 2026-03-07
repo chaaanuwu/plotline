@@ -1,9 +1,6 @@
-import axios from 'axios';
-
 import History from '../models/history.model.js';
 import WatchList from '../models/watchList.model.js';
-import { getOrCreateMovie } from '../utils/movieUtils.js';
-import { TMDB_BASE_URL, TMDB_KEY } from '../config/env.js';
+import { getOrCreateMovie } from '../utils/movie.utils.js';
 
 /**
  * Get current user's watched movies
@@ -29,44 +26,39 @@ export const getWatchedMovies = async (req, res) => {
 export const addWatchedMovie = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { title, rating = null, review = null } = req.body;
+    const { title, rating = null } = req.body;
 
-    const tmdbRes = await axios.get(`${TMDB_BASE_URL}/search/movie`, {
-      params: { api_key: TMDB_KEY, query: title }
-    });
-
-    const results = tmdbRes.data.results;
-    if (!results.length) {
+    const movieData = await getOrCreateMovie(title);
+    if (!movieData) {
       return res.status(404).json({ success: false, message: 'Movie not found in TMDb' });
     }
 
-    const tmdbMovie = results[0];
-
-    const movieData = await getOrCreateMovie(title);
-
-    if (!movieData) return res.status(404).json({ success: false, message: 'Movie not found in TMDb' });
-
-    const historyExists = await History.findOne({ userId, movieId: tmdbMovie.id });
+    const historyExists = await History.findOne({ userId, movieId: movieData._id });
     if (historyExists) {
       return res.status(409).json({ success: false, message: 'Movie already exists in watched list' });
     }
 
     const watchedMovie = await History.create({
       userId,
-      movieId: tmdbMovie.id,
+      movieId: movieData._id,
       rating,
-      review,
-      movie: movieData._id
+      watchedAt: new Date()
     });
 
-    await WatchList.deleteOne({ userId, movieId: tmdbMovie.id });
+    await WatchList.deleteOne({ userId, movieId: movieData._id });
 
-    res.status(201).json({ success: true, message: 'Movie added to watched list', data: watchedMovie });
+    res.status(201).json({
+      success: true,
+      message: 'Movie added to watched list',
+      data: watchedMovie
+    });
+
   } catch (error) {
-    console.error(error);
+    console.error('Add watched movie error:', error);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 };
+
 
 /**
  * Update rating or review of a watched movie
@@ -77,13 +69,13 @@ export const updateWatchedMovie = async (req, res) => {
     const { rating, review } = req.body;
     const userId = req.user.userId;
 
-    if (rating === undefined && review === undefined) {
+    if (rating === undefined) {
       return res.status(400).json({ success: false, message: 'Nothing to update' });
     }
 
     const movie = await History.findOneAndUpdate(
       { movieId, userId },
-      { $set: { rating, review } },
+      { $set: { rating } },
       { new: true, runValidators: true }
     );
 
@@ -92,9 +84,7 @@ export const updateWatchedMovie = async (req, res) => {
     }
 
     let message = 'Movie updated';
-    if (rating !== undefined && review !== undefined) message = 'Rating and review updated';
-    else if (rating !== undefined) message = 'Rating updated';
-    else if (review !== undefined) message = 'Review updated';
+    if (rating !== undefined) message = 'Rating updated';
 
     res.status(200).json({ success: true, message, data: movie });
   } catch (error) {
