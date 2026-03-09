@@ -119,8 +119,8 @@ export default function Profile() {
 
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-sm text-slate-500">
                         {profileData?.user.createdAt && (
-                            <div class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-lg">calendar_month</span>
+                            <div className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-lg">calendar_month</span>
                                 <span>
                                     Joined {new Date(profileData?.user.createdAt).toLocaleDateString(undefined, {
                                         year: 'numeric',
