@@ -12,14 +12,6 @@ export default function App() {
     });
 
     return (
-        // <>
-        //     {token ? (
-        //         <Feed />
-        //     ) : (
-        //         <LoginPage setToken={setToken} />
-        //     )}
-        // </>
-
         <BrowserRouter>
             <Routes>
 
@@ -47,11 +39,20 @@ export default function App() {
 
                 {/* Profile Route */}
                 <Route
-                    path = "/profile"
-                    element = {
+                    path="/me"
+                    element={
                         token
-                        ? <Profile />
-                        : <Navigate to = "/login" />
+                            ? <Profile />
+                            : <Navigate to="/login" />
+                    }
+                />
+
+                <Route
+                    path="/profile/:userId"
+                    element={
+                        token
+                            ? <Profile />
+                            : <Navigate to="/login" />
                     }
                 />
 
