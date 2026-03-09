@@ -10,7 +10,7 @@ export default function Feed() {
         <>
             <h1>Feed</h1>
 
-            <button onClick={() => navigate("/profile")}>
+            <button onClick={() => navigate("/me")}>
                 Go to Profile
             </button>
         </>

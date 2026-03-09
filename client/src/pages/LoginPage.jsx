@@ -8,8 +8,6 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
-    console.log("hi");
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
@@ -29,7 +27,7 @@ export default function LoginPage() {
                 throw new Error(data.message || "Login failed");
             }
 
-            localStorage.setItem("token", data.token);
+            localStorage.setItem("token", data.data.token);
 
         } catch (error) {
             console.error("Error:", error);
