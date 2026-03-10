@@ -5,14 +5,16 @@ import {
     addFilmReview,
     deleteFilmReview,
     getAllFilmReviews,
-    getAllMyReviews,
+    getAllUserReviews,
     getFilmReview,
     updateFilmReview
 } from '../controllers/review.controller.js';
 
 const reviewRouter = Router();
 
-reviewRouter.get('/reviews', authorize, getAllMyReviews);
+reviewRouter.get('/reviews', authorize, getAllUserReviews);
+
+reviewRouter.get('/users/:userId/reviews', authorize, getAllUserReviews);
 
 reviewRouter.get('/:movieId/review', authorize, getFilmReview);
 
