@@ -6,6 +6,7 @@ import bbBg from "../assets/bb-bg.jpg";
 import defaultPfp from "../assets/default-pfp.jpg";
 import CustomButton from "../components/ui/CustomButton";
 import Tabs from "../components/Tabs";
+import ReviewCard from "../components/ui/ReviewCard";
 
 export default function Profile() {
     const { userId } = useParams();
@@ -62,45 +63,48 @@ export default function Profile() {
 
             <div className="relative">
 
-                <div className="h-48 md:h-80 w-full overflow-hidden rounded-xl">
+                <div className="relative h-48 md:h-80 w-full overflow-hidden rounded-xl">
                     <img
                         src={bbBg}
                         alt="Cover"
                         className="w-full h-full object-cover"
                         draggable="false"
                     />
+
+                    <CustomButton
+                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/50 text-white border border-white rounded-lg hover:shadow-lg transition text-sm"
+                    >
+                        Change Cover
+                    </CustomButton>
                 </div>
 
-                <div className="px-4 -mt-16 md:-mt-20 flex flex-column md:flex-row md:items-end justify-between gap-4">
+                <div className="px-4 -mt-16 md:-mt-20 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    {/* Profile Picture */}
                     <div className="relative inline-block">
-                        <div className="size-32 md:size-40 rounded-full border-4 border-white overflow-hidden shadow-xl">
+                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white overflow-hidden shadow-xl">
                             <img
                                 src={profileData.user.pfp || defaultPfp}
-                                alt="Cover"
+                                alt="Profile"
                                 className="w-full h-full object-cover"
                                 draggable="false"
                             />
                         </div>
                     </div>
 
-                    <div className="flex gap-2 mb-2">
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap gap-2 items-start md:items-center">
                         <CustomButton
-                            bgColor="var(--primary-color)"
-                            textColor="#fff"
-                            rounded="full"
                             onClick={() => console.log("Follow clicked")}
+                            className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-full hover:bg-[var(--interaction-color)] hover:shadow-lg transition text-sm sm:text-base flex-1 sm:flex-auto min-w-[120px] text-center"
                         >
                             Follow
                         </CustomButton>
 
                         <CustomButton
-                            bgColor="#F8FAFC"
-                            textColor="var(--primary-text)"
-                            border="2px solid var(--border-color)"
-                            size={40}
                             onClick={() => console.log("More clicked")}
+                            className="w-10 h-10 flex items-center justify-center bg-[#F8FAFC] text-[var(--primary-text)] border-2 border-[var(--border-color)] rounded-full hover:border-[var(--primary-color)] hover:shadow-lg transition"
                         >
-                            <span className="material-symbols-outlined text-lg">more_horiz</span>
+                            <span className="material-symbols-outlined text-lg sm:text-xl">more_horiz</span>
                         </CustomButton>
                     </div>
                 </div>
@@ -149,6 +153,8 @@ export default function Profile() {
                 </div>
 
                 <Tabs />
+
+                <ReviewCard />
 
             </div>
 

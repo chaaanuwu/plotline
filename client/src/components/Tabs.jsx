@@ -63,6 +63,11 @@ export default function Tabs() {
                             key={r._id}
                             className="p-4 border rounded-md bg-white shadow-sm"
                         >
+                            <img
+                                src={`${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${r.movieId.posterPath}`}
+                                alt={r.movieId.title}
+                                className="w-16 h-24 object-cover rounded"
+                            />
                             <p>{r.review}</p>
                             <small className="text-slate-400">
                                 Posted on {new Date(r.createdAt).toLocaleDateString()}
