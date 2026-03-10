@@ -1,15 +1,15 @@
 import Review from '../models/review.model.js';
 import History from '../models/history.model.js';
 
-export const getAllMyReviews = async (req, res) => {
+export const getAllUserReviews = async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.params.userId || req.query.userId || req.user.userId;
 
         const reviews = await Review.find({ userId })
             .populate('movieId', 'title posterPath releaseDate');
 
-        if (reviews.length === 0) {
-            res.status(404).json({
+        if (!reviews || reviews.length === 0) {
+            return res.status(404).json({
                 success: false,
                 error: "No reviews found"
             });
@@ -21,7 +21,7 @@ export const getAllMyReviews = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Get my reviews error:', error);
+        console.error('Get reviews error:', error);
         res.status(500).json({
             success: false,
             error: "Server error"
