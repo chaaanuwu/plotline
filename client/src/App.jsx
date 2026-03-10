@@ -1,15 +1,23 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useUserStore from "./store/userStore";
+
 import LoginPage from "./pages/LoginPage";
 import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
+import useAuthLoader from "./hooks/useAuthLoader";
 
 export default function App() {
 
-    // prevents the flickering of the login page on initial load when token is present in localStorage
-    const [token, setToken] = useState(() => {
-        return localStorage.getItem("token");
-    });
+    useAuthLoader();
+
+    const isLoading = useUserStore((state) => state.isLoading);
+
+    const [token, setToken] = useState(localStorage.getItem("token"));
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <BrowserRouter>
@@ -48,7 +56,7 @@ export default function App() {
                 />
 
                 <Route
-                    path="/profile/:userId"
+                    path="/user/:userId"
                     element={
                         token
                             ? <Profile />

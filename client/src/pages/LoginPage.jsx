@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import bg from "../assets/bb-bg.jpg";
 import Footer from "../components/Footer";
+import useUserStore from "../store/userStore";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -22,12 +23,17 @@ export default function LoginPage() {
             });
 
             const data = await response.json();
+            console.log("Login response:", data);
 
             if (!response.ok) {
                 throw new Error(data.message || "Login failed");
             }
 
             localStorage.setItem("token", data.data.token);
+
+            const user = useUserStore((state) => state.user);
+            // setUser(data.data.user);
+            useUserStore.setState({ user: data.data.user });
 
         } catch (error) {
             console.error("Error:", error);

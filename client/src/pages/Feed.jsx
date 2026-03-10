@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 export default function Feed() {
     const navigate = useNavigate();
@@ -8,6 +9,7 @@ export default function Feed() {
 
     return (
         <>
+        <Navbar />
             <h1>Feed</h1>
 
             <button onClick={() => navigate("/me")}>
