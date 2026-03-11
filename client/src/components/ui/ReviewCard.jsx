@@ -1,6 +1,3 @@
-import bbBg from "../../assets/bb-bg.jpg"; // backdrop
-import poster from "../../assets/bb-bg.jpg"; // poster image
-
 export default function ReviewCard({
     firstName,
     lastName,
@@ -49,7 +46,7 @@ export default function ReviewCard({
                     {/* Backdrop (desktop/tablet only) */}
                     <div className="hidden md:block w-full relative rounded-md overflow-hidden">
                         <img
-                            src={bbBg}
+                            src={backdropUrl}
                             alt="Backdrop"
                             className="w-full h-64 object-cover" // full width, restricted height
                             draggable="false"
@@ -57,7 +54,7 @@ export default function ReviewCard({
 
                         {/* Poster over backdrop */}
                         <img
-                            src={poster}
+                            src={posterUrl}
                             alt="Poster"
                             className="absolute bottom-2 left-2 w-40 h-56 object-cover rounded-md shadow-lg"
                             draggable="false"
@@ -67,7 +64,7 @@ export default function ReviewCard({
                     {/* Mobile view: poster only */}
                     <div className="block md:hidden w-full h-48 rounded-md overflow-hidden">
                         <img
-                            src={poster}
+                            src={posterUrl}
                             alt="Poster"
                             className="w-full h-full object-cover"
                             draggable="false"
@@ -77,8 +74,7 @@ export default function ReviewCard({
                     {/* Review text */}
                     <div className="flex-1">
                         <p className="text-[var(--primary-text)] leading-relaxed mt-2 md:mt-0">
-                            Breaking Bad still holds up as one of the greatest TV shows ever made.
-                            The storytelling, character development, and tension are unmatched.
+                            {reviewText}
                         </p>
                     </div>
 

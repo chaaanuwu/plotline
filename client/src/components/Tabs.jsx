@@ -171,12 +171,16 @@ export default function Tabs({ profileData, isMyProfile }) { // ✅ receive as p
     useEffect(() => {
         const fetchTabContent = async () => {
             try {
-                if (!profileData) return; // ✅ wait until profileData is available
+                if (!profileData) return;
 
                 let fetchRequest;
 
                 if (activeTab === "reviews") {
-                    fetchRequest = `${import.meta.env.VITE_PLOTLINE_BASE_URL}/users/${profileData.user._id}/reviews`; // ✅ fetch for profile user
+                    if (isMyProfile) {
+                        fetchRequest = `${import.meta.env.VITE_PLOTLINE_BASE_URL}/reviews`;
+                    } else {
+                        fetchRequest = `${import.meta.env.VITE_PLOTLINE_BASE_URL}/users/${profileData.user._id}/reviews`;
+                    }
                 } else if (activeTab === "history") {
                     fetchRequest = `${import.meta.env.VITE_PLOTLINE_BASE_URL}/users/${profileData.user._id}/history`;
                 } else if (activeTab === "watchlist") {
@@ -190,13 +194,14 @@ export default function Tabs({ profileData, isMyProfile }) { // ✅ receive as p
                 });
 
                 setTabContent(response.data);
+
             } catch (error) {
                 console.error("Error fetching tab content:", error);
             }
         };
 
         fetchTabContent();
-    }, [activeTab, profileData]); // ✅ add profileData as dependency
+    }, [activeTab, profileData, isMyProfile]);
 
     return (
         <div>
@@ -224,14 +229,14 @@ export default function Tabs({ profileData, isMyProfile }) { // ✅ receive as p
                     tabContent?.reviews?.map((r) => (
                         <ReviewCard
                             key={r._id}
-                            firstName={r.user.firstName} // ✅ use review owner's name, not logged user
-                            lastName={r.user.lastName}
-                            pfp={r.user.pfp || defaultPfp}
+                            firstName={r.user?.firstName}
+                            lastName={r.user?.lastName}
+                            pfp={r.user?.pfp || defaultPfp}
                             reviewDate={new Date(r.createdAt).toLocaleDateString()}
-                            posterUrl={`${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${r.movieId.posterPath}`}
-                            backdropUrl={`${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${r.movieId.backdropPath}`}
-                            reviewText={r.review}
-                            rating={r.rating}
+                            posterUrl={`${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${r.movieId?.posterPath}`}
+                            backdropUrl={`${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${r.movieId?.backdropPath}`}
+                            reviewText={r?.review}
+                            rating={r?.rating}
                         />
                     ))}
                 {/* You can keep history and watchlist logic same */}
