@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from "cors";
 
-import { PORT, BASE_URL } from './config/env.js';
+import { BASE_URL } from './config/env.js';
 import connectToDatabase from './database/mongodb.js';
 import authRouter from './routes/auth.routes.js';
 import userRouter from './routes/user.route.js';
@@ -34,10 +34,5 @@ app.use(`${BASE_URL}`, reviewRouter);
 app.use(`${BASE_URL}`, followRouter);
 
 app.use(errorMiddleware);
-
-app.listen(PORT, async () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    await connectToDatabase();
-});
 
 export default app;
