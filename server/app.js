@@ -2,7 +2,6 @@ import express from 'express';
 import cors from "cors";
 
 import { BASE_URL } from './config/env.js';
-import connectToDatabase from './database/mongodb.js';
 import authRouter from './routes/auth.routes.js';
 import userRouter from './routes/user.route.js';
 import errorMiddleware from './middlewares/error.middleware.js';
@@ -16,9 +15,9 @@ import profileRouter from './routes/features/profile.route.js';
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173", // allow your React frontend
+  origin: "http://localhost:5173", // allow React frontend
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true // if you’re sending cookies
+  credentials: true // if sending cookies
 }));
 
 app.use(express.json());

@@ -37,7 +37,7 @@ describe("User API - User Profile", () => {
                 password: "123456"
             });
 
-        token = res.body.data.token; // store JWT for logout test
+        token = res.body.data.token;
     });
 
 
