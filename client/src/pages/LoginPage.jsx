@@ -3,6 +3,7 @@ import { useState } from "react";
 import bg from "../assets/bb-bg.jpg";
 import Footer from "../components/Footer";
 import useUserStore from "../store/userStore";
+import { signIn } from "../api/auth.api";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -14,27 +15,13 @@ export default function LoginPage() {
         setError("");
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_PLOTLINE_BASE_URL}/auth/sign-in`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
+            const data = await signIn(email, password);
 
-            const data = await response.json();
-            console.log("Login response:", data);
-
-            if (!response.ok) {
-                throw new Error(data.message || "Login failed");
-            }
-
+            // save token to local storage
             localStorage.setItem("token", data.data.token);
 
-            const user = useUserStore((state) => state.user);
-            // setUser(data.data.user);
+            // update Zustand store
             useUserStore.setState({ user: data.data.user });
-
         } catch (error) {
             console.error("Error:", error);
             setError(error.message);
