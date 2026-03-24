@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import ReviewCard from "./ui/ReviewCard";
 import defaultPfp from "../assets/default-pfp.jpg";
+import { getMyReviews, getUserReviews } from "../api/reviews.api";
 
 export default function Tabs({ profileData, isMyProfile }) {
     const [activeTab, setActiveTab] = useState("reviews");
@@ -12,25 +12,21 @@ export default function Tabs({ profileData, isMyProfile }) {
             try {
                 if (!profileData) return;
 
-                let fetchRequest;
+                let response;
 
                 if (activeTab === "reviews") {
-                    if (isMyProfile) {
-                        fetchRequest = `${import.meta.env.VITE_PLOTLINE_BASE_URL}/reviews`;
-                    } else {
-                        fetchRequest = `${import.meta.env.VITE_PLOTLINE_BASE_URL}/users/${profileData.user._id}/reviews`;
-                    }
-                } else if (activeTab === "history") {
-                    fetchRequest = `${import.meta.env.VITE_PLOTLINE_BASE_URL}/users/${profileData.user._id}/history`;
-                } else if (activeTab === "watchlist") {
-                    fetchRequest = `${import.meta.env.VITE_PLOTLINE_BASE_URL}/users/${profileData.user._id}/watchlist`;
+                    response = isMyProfile
+                        ? await getMyReviews()
+                        : await getUserReviews(profileData.user._id);
+
                 }
+                // else if (activeTab === "history") {
+                //     response = await getUserHistory(profileData.user._id);
+                // } else if (activeTab === "watchlist") {
+                //    response = await getUserWatchlist(profileData.user._id);
+                // }
 
-                if (!fetchRequest) return;
-
-                const response = await axios.get(fetchRequest, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-                });
+                if (!response) return;
 
                 setTabContent(response.data);
 
