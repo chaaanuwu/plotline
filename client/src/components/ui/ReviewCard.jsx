@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import useUserStore from "../../store/userStore";
+import { toggleLikeReview } from "../../api/reviews.api";
 
 export default function ReviewCard({
     userId,
@@ -19,11 +20,6 @@ export default function ReviewCard({
     imdbRating,
     genres,
 }) {
-    const user = useUserStore();
-
-    // user._id might be a plain string or an ObjectId — normalize to hex string
-    // const userId = user?.user?._id?.toString();
-
     const [isLiked, setIsLiked] = useState(
         Array.isArray(reviewLikes)
             ? reviewLikes.includes(userId)
@@ -43,23 +39,13 @@ export default function ReviewCard({
 
         const alreadyLiked = isLiked;
 
-        // optimistic update — update UI immediately, no waiting
         setIsLiked(!alreadyLiked);
         setLikes((prev) => (alreadyLiked ? prev - 1 : prev + 1));
         setLoading(true);
 
         try {
-            await axios.patch(
-                `${import.meta.env.VITE_PLOTLINE_BASE_URL}/reviews/${reviewId}`,
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    },
-                }
-            );
-            // do NOT sync state from response — causes flash/jump
-            // optimistic update is correct, backend fix handles persistence
+            await toggleLikeReview(reviewId);
+
         } catch (err) {
             // rollback only on failure
             setIsLiked(alreadyLiked);
@@ -77,9 +63,9 @@ export default function ReviewCard({
                 className="relative w-full h-64 bg-cover bg-center"
                 style={{ backgroundImage: `url(${backdropUrl})` }}
             >
-                <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/70" />
+                <div className="absolute inset-0 bg-linear-to-b from-black/5 to-black/70" />
 
-                <div className="absolute bottom-0 left-0 right-0 pl-[128px] pr-5 pb-4 pt-3">
+                <div className="absolute bottom-0 left-0 right-0 pl-32 pr-5 pb-4 pt-3">
                     <a href={`/movies/${movieId}`}>
                         <p className="text-white font-bold text-xl leading-tight tracking-tight drop-shadow-md">
                             {movieTitle}
@@ -112,7 +98,7 @@ export default function ReviewCard({
                     src={posterUrl}
                     alt="Poster"
                     draggable="false"
-                    className="absolute -bottom-16 left-5 w-[96px] h-[138px] object-cover rounded-xl border-[3px] border-white shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
+                    className="absolute -bottom-16 left-5 w-24 h-34.5 object-cover rounded-xl border-[3px] border-white shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
                 />
             </div>
 
