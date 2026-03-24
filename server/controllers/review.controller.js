@@ -6,7 +6,7 @@ export const getAllUserReviews = async (req, res) => {
         const userId = req.params.userId || req.query.userId || req.user.userId;
 
         const reviews = await Review.find({ userId })
-            .populate('movieId', 'title posterPath releaseDate');
+            .populate('movieId', '_id title posterPath backdropPath releaseDate genreNames');
 
         if (!reviews || reviews.length === 0) {
             return res.status(404).json({
@@ -191,6 +191,52 @@ export const getAllFilmReviews = async (req, res) => {
 
     } catch (error) {
         console.error("Get all film reviews error: ", error);
+        res.status(500).json({
+            success: false,
+            error: "Server error"
+        });
+    }
+};
+
+export const likeReview = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { reviewId } = req.params;
+
+        const review = await Review.findById(reviewId);
+
+        if (!review) {
+            return res.status(404).json({
+                success: false,
+                error: "Review not found"
+            });
+        }
+
+        // Ensure likes is always an array
+        if (!Array.isArray(review.likedBy)) {
+            review.likedBy = [];
+        }
+
+        const alreadyLiked = review.likedBy.includes(userId);
+
+        if (alreadyLiked) {
+            review.likedBy.pull(userId);
+        } else {
+            review.likedBy.push(userId);
+        }
+
+        await review.save();
+
+        res.status(200).json({
+            success: true,
+            message: alreadyLiked
+                ? "Review like removed successfully"
+                : "Review liked successfully",
+            data: review
+        });
+
+    } catch (error) {
+        console.error("Like review error: ", error);
         res.status(500).json({
             success: false,
             error: "Server error"

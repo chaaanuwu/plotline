@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import useAuthLoader from "./hooks/useAuthLoader";
+import MoviePage from "./pages/MoviePage";
 
 export default function App() {
 

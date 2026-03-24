@@ -15,9 +15,9 @@ import profileRouter from './routes/features/profile.route.js';
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173", // allow React frontend
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true // if sending cookies
+  origin: "http://localhost:5173", // allow your React frontend
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true // if you’re sending cookies
 }));
 
 app.use(express.json());

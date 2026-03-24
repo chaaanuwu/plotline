@@ -7,7 +7,8 @@ import {
     getAllFilmReviews,
     getAllUserReviews,
     getFilmReview,
-    updateFilmReview
+    updateFilmReview,
+    likeReview
 } from '../controllers/review.controller.js';
 
 const reviewRouter = Router();
@@ -21,6 +22,8 @@ reviewRouter.get('/:movieId/review', authorize, getFilmReview);
 reviewRouter.post('/:movieId/review', authorize, addFilmReview);
 
 reviewRouter.patch('/:movieId/review', authorize, updateFilmReview);
+
+reviewRouter.patch('/reviews/:reviewId', authorize, likeReview);
 
 reviewRouter.delete('/:movieId/review', authorize, deleteFilmReview);
 
