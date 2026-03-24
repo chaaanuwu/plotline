@@ -7,7 +7,7 @@ import CustomButton from "../components/ui/CustomButton";
 import Tabs from "../components/Tabs";
 import useUserStore from "../store/userStore";
 import Navbar from "../components/Navbar";
-import axios from "axios";
+import { getProfile } from "../api/user.api";
 
 export default function Profile() {
     const [profileData, setProfileData] = useState(null);
@@ -19,20 +19,14 @@ export default function Profile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const url = userId
-                    ? `${import.meta.env.VITE_PLOTLINE_BASE_URL}/user/${userId}`
-                    : `${import.meta.env.VITE_PLOTLINE_BASE_URL}/profile/me`;
-
-                const response = await axios.get(url, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-                });
-
-                setProfileData(response.data);
+                const data = await getProfile(userId);
+                setProfileData(data);
             } catch (err) {
                 console.error("Failed to fetch profile", err);
             }
         };
 
+        
         fetchProfile();
     }, [userId]);
 
