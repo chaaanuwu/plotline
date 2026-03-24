@@ -2,7 +2,6 @@ import express from 'express';
 import cors from "cors";
 
 import { BASE_URL } from './config/env.js';
-import connectToDatabase from './database/mongodb.js';
 import authRouter from './routes/auth.routes.js';
 import userRouter from './routes/user.route.js';
 import errorMiddleware from './middlewares/error.middleware.js';
