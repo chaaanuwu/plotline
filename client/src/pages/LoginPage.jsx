@@ -10,6 +10,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
+    const { setUser } = useUserStore();
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
@@ -17,16 +19,16 @@ export default function LoginPage() {
         try {
             const data = await signIn(email, password);
 
-            // save token to local storage
+            // save token to localStorage
             localStorage.setItem("token", data.data.token);
 
-            // update Zustand store
-            useUserStore.setState({ user: data.data.user });
+            setUser(data.data.user);
+
         } catch (error) {
-            console.error("Error:", error);
-            setError(error.message);
+            console.error("Login error:", error);
+            setError(error.response?.data?.message || "Login failed");
         }
-    }
+    };
 
     return (
         <>

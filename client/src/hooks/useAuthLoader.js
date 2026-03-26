@@ -1,15 +1,14 @@
 import { useEffect } from "react";
-import axios from "axios";
 import useUserStore from "../store/userStore";
+import { getProfile } from "../api/user.api";
+import { useParams } from "react-router-dom";
 
 export default function useAuthLoader() {
-
     const { setUser, setLoading, setError } = useUserStore();
+    const { userId } = useParams();
 
     useEffect(() => {
-
         const loadUser = async () => {
-
             const token = localStorage.getItem("token");
 
             if (!token) {
@@ -18,22 +17,21 @@ export default function useAuthLoader() {
             }
 
             try {
-                const res = await axios.get(`${import.meta.env.VITE_PLOTLINE_BASE_URL}/profile/me`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                // store only the user object data
-                setUser(res.data);
+                // fetch current user using token automatically attached by axiosInstance
+                const user = await getProfile(userId);
+                setUser(user);
 
             } catch (err) {
                 console.error("Auth error:", err);
 
+                // remove invalid token
                 localStorage.removeItem("token");
                 setError("Authentication failed");
+            } finally {
+                setLoading(false);
             }
         };
 
         loadUser();
-
     }, [setUser, setLoading, setError]);
 }
