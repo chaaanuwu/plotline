@@ -6,17 +6,49 @@ import { getOrCreateMovie } from "../utils/movie.utils.js";
 /**
  * Get current user's watched movies
  */
+// export const getWatchedMovies = async (req, res) => {
+//   try {
+//     const userId = req.user.userId;
+
+//     const movies = await History.find({ userId })
+//       .sort({ watchedAt: -1 })
+//       .populate("movieId", "movieId title posterPath releaseDate");
+
+//     res.status(200).json({
+//       success: true,
+//       data: movies
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       success: false,
+//       error: "Server error"
+//     });
+//   }
+// };
+
 export const getWatchedMovies = async (req, res) => {
   try {
     const userId = req.user.userId;
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const skip = (page - 1) * limit;
+
     const movies = await History.find({ userId })
       .sort({ watchedAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate("movieId", "movieId title posterPath releaseDate");
+
+    const total = await History.countDocuments({ userId });
 
     res.status(200).json({
       success: true,
-      data: movies
+      data: movies,
+      hasMore: skip + movies.length < total
     });
 
   } catch (error) {
@@ -187,45 +219,6 @@ export const removeWatchedMovie = async (req, res) => {
 };
 
 
-// /**
-//  * Get another user's watched movies (public)
-//  */
-// export const getUserHistory = async (req, res) => {
-//   try {
-//     const { userId } = req.params;
-
-//     if (!mongoose.isValidObjectId(userId)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid user ID"
-//       });
-//     }
-
-//     const movies = await History.find({ userId })
-//       .sort({ watchedAt: -1 })
-//       .populate("movieId", "title posterPath releaseDate");
-
-//     if (!movies.length) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "No history found for this user"
-//       });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       data: movies
-//     });
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       success: false,
-//       error: "Server error"
-//     });
-//   }
-
-
 
 
 
@@ -278,7 +271,7 @@ export const getUserHistory = async (req, res) => {
 
     const movies = await History.find({ userId })
       .sort({ watchedAt: -1 })
-      .populate('movie', 'title posterPath banner overview releaseDate');
+      .populate('movieId', 'title posterPath banner overview releaseDate');
 
     if (!movies.length) {
       return res.status(404).json({ success: false, message: 'No history found for this user' });
