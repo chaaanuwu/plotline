@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useUserStore from "./store/userStore";
 
 import LoginPage from "./pages/LoginPage";
@@ -8,6 +8,17 @@ import Profile from "./pages/Profile";
 import useAuthLoader from "./hooks/useAuthLoader";
 import MoviePage from "./pages/MoviePage";
 
+function isTokenExpired(token) {
+    if (!token) return true;
+
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return Date.now() > payload.exp * 1000;
+    } catch {
+        return true;
+    }
+}
+
 export default function App() {
 
     useAuthLoader();
@@ -15,6 +26,8 @@ export default function App() {
     const isLoading = useUserStore((state) => state.isLoading);
 
     const [token, setToken] = useState(localStorage.getItem("token"));
+
+    const isExpired = isTokenExpired(token);
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -28,29 +41,27 @@ export default function App() {
                 <Route
                     path="/login"
                     element={
-                        token
+                        token && !isExpired
                             ? <Navigate to="/" />
                             : <LoginPage setToken={setToken} />
                     }
                 />
 
-                {/* Protected Routes */}
-
-                {/* Feed Route */}
+                {/* Feed */}
                 <Route
                     path="/"
                     element={
-                        token
+                        token && !isExpired
                             ? <Feed />
                             : <Navigate to="/login" />
                     }
                 />
 
-                {/* Profile Route */}
+                {/* Profile */}
                 <Route
                     path="/me"
                     element={
-                        token
+                        token && !isExpired
                             ? <Profile />
                             : <Navigate to="/login" />
                     }
@@ -59,7 +70,7 @@ export default function App() {
                 <Route
                     path="/user/:userId"
                     element={
-                        token
+                        token && !isExpired
                             ? <Profile />
                             : <Navigate to="/login" />
                     }

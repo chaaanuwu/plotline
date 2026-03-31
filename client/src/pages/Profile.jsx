@@ -34,6 +34,9 @@ export default function Profile() {
 
     const isMyProfile = user?.user?._id === profileData?.user?._id;
 
+    console.log(user);
+    console.log(profileData);
+
     console.log("Profile - User from store:", user);
     console.log("Profile - Profile data:", profileData);
     console.log("Profile:", isMyProfile, user, profileData.user);

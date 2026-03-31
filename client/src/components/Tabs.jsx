@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import ReviewCard from "./ui/ReviewCard";
 import defaultPfp from "../assets/default-pfp.jpg";
 import { getMyReviews, getUserReviews } from "../api/reviews.api";
+import MovieCard from "./ui/MovieCard";
+import HistoryTab from "./HistoryTab";
 
 export default function Tabs({ profileData, isMyProfile }) {
     const [activeTab, setActiveTab] = useState("reviews");
@@ -83,6 +85,9 @@ export default function Tabs({ profileData, isMyProfile }) {
                             rating={r?.rating}
                         />
                     ))}
+
+
+                    {activeTab === "history" && <HistoryTab />}
             </div>
         </div>
     );
