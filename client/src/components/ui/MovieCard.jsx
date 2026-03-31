@@ -2,8 +2,10 @@ export default function MovieCard({
     title,
     poster,
     rating,
-    releaseYear
+    releaseDate
 }) {
+    const releaseYear = new Date(releaseDate).getFullYear();
+
     return (
         <>
             <div className="w-48 group cursor-pointer">
@@ -31,13 +33,13 @@ export default function MovieCard({
 
                 </div>
 
-                <div className="mt-3">
+                <div className="mt-3 flex gap-2 items-center">
                     <a href="">
                         <h2 className="text-slate-700 text-lg font-semibold leading-tight line-clamp-1">
                             {title}
                         </h2>
                     </a>
-                    <p className="text-slate-400 text-sm mt-1">{releaseYear}</p>
+                    <p className="text-slate-400 text-sm">{`(${releaseYear})`}</p>
                 </div>
             </div>
         </>

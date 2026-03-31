@@ -6,28 +6,6 @@ import { getOrCreateMovie } from "../utils/movie.utils.js";
 /**
  * Get current user's watched movies
  */
-// export const getWatchedMovies = async (req, res) => {
-//   try {
-//     const userId = req.user.userId;
-
-//     const movies = await History.find({ userId })
-//       .sort({ watchedAt: -1 })
-//       .populate("movieId", "movieId title posterPath releaseDate");
-
-//     res.status(200).json({
-//       success: true,
-//       data: movies
-//     });
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       success: false,
-//       error: "Server error"
-//     });
-//   }
-// };
-
 export const getWatchedMovies = async (req, res) => {
   try {
     const userId = req.user.userId;
