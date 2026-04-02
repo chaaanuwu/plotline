@@ -21,8 +21,7 @@ const movieSchema = new mongoose.Schema({
 
 movieSchema.set('toJSON', {
   transform: (doc, ret) => {
-    ret.id = ret.movieId;
-    delete ret._id;
+    ret.tmdbId = ret.movieId;
     delete ret.__v;
     return ret;
   }

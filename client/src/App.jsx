@@ -7,6 +7,7 @@ import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import useAuthLoader from "./hooks/useAuthLoader";
 import MoviePage from "./pages/MoviePage";
+import Navbar from "./components/Navbar";
 
 function isTokenExpired(token) {
     if (!token) return true;
@@ -35,6 +36,8 @@ export default function App() {
 
     return (
         <BrowserRouter>
+                  <Navbar />
+
             <Routes>
 
                 {/* Login Route */}
@@ -72,6 +75,15 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <Profile />
+                            : <Navigate to="/login" />
+                    }
+                />
+
+                <Route
+                    path="/movies/:movieId"
+                    element={
+                        token && !isExpired
+                            ? <MoviePage />
                             : <Navigate to="/login" />
                     }
                 />
