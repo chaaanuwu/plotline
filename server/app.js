@@ -11,6 +11,7 @@ import followRouter from './routes/user_follows.route.js';
 import reviewRouter from './routes/review.route.js';
 import commentRouter from './routes/comment.route.js';
 import profileRouter from './routes/features/profile.route.js';
+import movieRouter from './routes/movie.route.js';
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: false}));
 
 app.use(`${BASE_URL}/auth`, authRouter);
 app.use(`${BASE_URL}/user`, userRouter);
+app.use(`${BASE_URL}/movies`, movieRouter);
 app.use(`${BASE_URL}/history`, historyRouter);
 app.use(`${BASE_URL}/watchlist`, watchListRouter);
 app.use(`${BASE_URL}`, profileRouter);

@@ -4,6 +4,7 @@ export default function MovieCard({
     rating,
     releaseDate
 }) {
+
     const releaseYear = new Date(releaseDate).getFullYear();
 
     return (

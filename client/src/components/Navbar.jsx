@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import useUserStore from "../store/userStore";
+import Modal from "./ui/Modal";
+import { ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/outline";
 
 export default function Navbar() {
+  const [open, setOpen] = useState(false);
 
   const { user, logout } = useUserStore();
 
@@ -32,9 +36,22 @@ export default function Navbar() {
             {getUserInitials()}
           </div>
 
-          <button onClick={logout}>
+          <button onClick={() => setOpen(true)}>
             Logout
           </button>
+
+          <Modal
+            open={open}
+            setOpen={setOpen}
+            title={"Logout"}
+            icon={<ArrowRightStartOnRectangleIcon aria-hidden="true" className="size-6 text-red-600" />}
+            description={"Are you sure you want to logout?"}
+            confirmText={"Logout"}
+            cancelText={"Cancel"}
+            confirmClassName={"bg-red-600"}
+            onConfirm={logout}
+          />
+
 
         </div>
       ) : (

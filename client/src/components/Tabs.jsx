@@ -31,6 +31,7 @@ export default function Tabs({ profileData, isMyProfile }) {
                 if (!response) return;
 
                 setTabContent(response.data);
+                console.log(`Fetched ${activeTab} content:`, response.data);
 
             } catch (error) {
                 console.error("Error fetching tab content:", error);
@@ -73,7 +74,7 @@ export default function Tabs({ profileData, isMyProfile }) {
                             lastName={r.user?.lastName ?? profileData.user.lastName}
                             pfp={r.user?.pfp ?? profileData.user.pfp ?? defaultPfp}
                             reviewId={r?._id}
-                            movieId={r._id}
+                            movieId={r.movieId?._id}
                             reviewDate={new Date(r.createdAt).toLocaleDateString()}
                             movieTitle={r.movieId?.title}
                             posterUrl={`${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${r.movieId?.posterPath}`}
