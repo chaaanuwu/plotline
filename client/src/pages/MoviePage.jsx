@@ -87,16 +87,25 @@ export default function MoviePage() {
                 <div className="mt-12 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-12 pb-24">
                     {/* Overview */}
                     <div className="space-y-10">
-                        <section>
+                        <motion.section
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.5 }}
+                        >
                             <h3 className="text-xs font-bold uppercase tracking-widest text-amber-600 mb-4">Overview</h3>
                             <p className="text-lg text-stone-600 leading-relaxed font-serif">
                                 {movieData?.overview}
                             </p>
-                        </section>
+                        </motion.section>
                     </div>
 
                     {/* Action Buttons */}
-                    <aside className="space-y-4">
+                    <motion.aside
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4 }}
+                        className="space-y-4"
+                    >
                         <ActionButton
                             active={watched}
                             onClick={() => setWatched(!watched)}
@@ -117,7 +126,7 @@ export default function MoviePage() {
                         >
                             {reviewOpen ? "Close Review" : "Write a Review"}
                         </button>
-                    </aside>
+                    </motion.aside>
                 </div>
             </div>
         </div>
