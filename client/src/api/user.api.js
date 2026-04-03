@@ -5,3 +5,11 @@ export const getProfile = async (userId) => {
     const res = await axiosInstance.get(url);
     return res.data;
 };
+
+export const setProfileCover = async (backdrop) => {
+    const res = await axiosInstance.put('/user/me', {
+        cover: backdrop
+    });
+
+    return res.data;
+}

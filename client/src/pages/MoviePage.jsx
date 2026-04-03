@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMovieById } from "../api/movie.api";
+import Loader from "../components/ui/Loader";
+import { useParams } from "react-router-dom";
 
 export default function MoviePage() {
     const [movieData, setMovieData] = useState(null);
@@ -26,7 +28,7 @@ export default function MoviePage() {
         fetchMovie();
     }, [movieId]);
 
-    if (loading) return <div className="min-h-screen bg-stone-50 flex items-center justify-center text-stone-400">Loading...</div>;
+    if (loading) return <Loader />;
 
     const releaseYear = movieData ? new Date(movieData.releaseDate).getFullYear() : "";
 
@@ -76,7 +78,7 @@ export default function MoviePage() {
 
                         <div className="mt-4 flex flex-wrap gap-2">
                             {movieData?.genreNames.map((g) => (
-                                <span key={g} className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-white border border-(--primary-color) text-(--primary-color)">
+                                <span key={g} className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-white border border-amber-600 text-amber-600">
                                     {g}
                                 </span>
                             ))}
@@ -87,16 +89,25 @@ export default function MoviePage() {
                 <div className="mt-12 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-12 pb-24">
                     {/* Overview */}
                     <div className="space-y-10">
-                        <section>
+                        <motion.section
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.5 }}
+                        >
                             <h3 className="text-xs font-bold uppercase tracking-widest text-amber-600 mb-4">Overview</h3>
                             <p className="text-lg text-stone-600 leading-relaxed font-serif">
                                 {movieData?.overview}
                             </p>
-                        </section>
+                        </motion.section>
                     </div>
 
                     {/* Action Buttons */}
-                    <aside className="space-y-4">
+                    <motion.aside
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4 }}
+                        className="space-y-4"
+                    >
                         <ActionButton
                             active={watched}
                             onClick={() => setWatched(!watched)}
@@ -117,7 +128,7 @@ export default function MoviePage() {
                         >
                             {reviewOpen ? "Close Review" : "Write a Review"}
                         </button>
-                    </aside>
+                    </motion.aside>
                 </div>
             </div>
         </div>

@@ -19,7 +19,7 @@ export const getWatchedMovies = async (req, res) => {
       .sort({ watchedAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("movieId", "movieId title posterPath releaseDate");
+      .populate("movieId", "movieId title posterPath backdropPath releaseDate");
 
     const total = await History.countDocuments({ userId });
 
