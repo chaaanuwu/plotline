@@ -8,9 +8,11 @@ import CustomButton from "../components/ui/CustomButton";
 import Tabs from "../components/Tabs";
 import useUserStore from "../store/userStore";
 import { getProfile } from "../api/user.api";
+import Loader from "../components/ui/Loader";
 
 export default function Profile() {
     const [profileData, setProfileData] = useState(null);
+    const [loading, setLoading] = useState(true);
     const user = useUserStore((state) => state.user);
     const { userId } = useParams();
 
@@ -21,11 +23,15 @@ export default function Profile() {
                 setProfileData(data);
             } catch (err) {
                 console.error("Failed to fetch profile", err);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchProfile();
     }, [userId]);
+
+    if (loading) return <Loader />;
 
     if (!profileData) {
         return (

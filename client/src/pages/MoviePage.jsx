@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMovieById } from "../api/movie.api";
+import Loader from "../components/ui/Loader";
 
 export default function MoviePage() {
     const [movieData, setMovieData] = useState(null);
@@ -26,7 +27,7 @@ export default function MoviePage() {
         fetchMovie();
     }, [movieId]);
 
-    if (loading) return <div className="min-h-screen bg-stone-50 flex items-center justify-center text-stone-400">Loading...</div>;
+    if (loading) return <Loader />;
 
     const releaseYear = movieData ? new Date(movieData.releaseDate).getFullYear() : "";
 
