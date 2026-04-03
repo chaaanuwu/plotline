@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMovieById } from "../api/movie.api";
 import Loader from "../components/ui/Loader";
+import { useParams } from "react-router-dom";
 
 export default function MoviePage() {
     const [movieData, setMovieData] = useState(null);
@@ -77,7 +78,7 @@ export default function MoviePage() {
 
                         <div className="mt-4 flex flex-wrap gap-2">
                             {movieData?.genreNames.map((g) => (
-                                <span key={g} className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-white border border-(--primary-color) text-(--primary-color)">
+                                <span key={g} className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-white border border-amber-600 text-amber-600">
                                     {g}
                                 </span>
                             ))}

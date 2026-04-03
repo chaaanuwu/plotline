@@ -28,7 +28,6 @@ export default function SearchBar({ placeholder = "Search..." }) {
     return (
         <div className="w-full max-w-2xl mx-auto px-4">
             <div
-                initial={false}
                 className={`relative flex items-center transition-all duration-300 rounded-2xl border ${isFocused
                     ? "border-amber-500/50 bg-white"
                     : "border-stone-200 bg-white/80 backdrop-blur-sm"

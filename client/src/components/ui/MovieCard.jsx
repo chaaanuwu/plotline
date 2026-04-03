@@ -1,48 +1,55 @@
+import { motion } from "framer-motion";
+
 export default function MovieCard({
+    id,
     title,
     poster,
     rating,
     releaseDate
 }) {
-
     const releaseYear = new Date(releaseDate).getFullYear();
 
     return (
-        <>
-            <div className="w-48 group cursor-pointer">
-                {/* Poster */}
-                <div className="w-48 aspect-2/3 relative overflow-hidden rounded-xl shadow-lg">
+        <motion.div
+            whileHover={{ y: -8 }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="group w-full cursor-pointer"
+        >
+            <a href={`/movies/${id}`}>
+                {/* Poster Container */}
+                <div className="relative aspect-2/3 overflow-hidden rounded-4xl bg-stone-200 shadow-md group-hover:shadow-2xl transition-all duration-500 border border-stone-100">
                     <img
                         src={`${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${poster}`}
                         alt={`${title} Poster`}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         draggable="false"
+                        loading="lazy"
                     />
 
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-transparent opacity-90"></div>
+                    {/* Cinematic Vignette Overlay */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    {/* Rating */}
+                    {/* Rating Badge - Updated to Glassmorphism */}
                     {rating && (
-                        < div className="absolute top-2 right-2 flex items-center gap-1 bg-(--primary-color) backdrop-blur-sm rounded-3xl px-4 py-1">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="#FBBF24">
+                        <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/20 backdrop-blur-md border border-white/30 rounded-full px-2 py-1 shadow-xl">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="#FBBF24">
                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                             </svg>
-                            <span className="text-white text-xs font-bold">{rating}</span>
+                            <span className="text-white text-[10px] font-black">{rating.toFixed(1)}</span>
                         </div>
                     )}
-
                 </div>
 
-                <div className="mt-3 flex gap-2 items-center">
-                    <a href="">
-                        <h2 className="text-slate-700 text-lg font-semibold leading-tight line-clamp-1">
-                            {title}
-                        </h2>
-                    </a>
-                    <p className="text-slate-400 text-sm">{`(${releaseYear})`}</p>
+                {/* Info Section */}
+                <div className="mt-4 px-1">
+                    <h2 className="text-stone-800 text-sm font-black tracking-tight leading-tight line-clamp-1 group-hover:text-amber-600 transition-colors">
+                        {title}
+                    </h2>
+                    <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mt-1">
+                        {releaseYear}
+                    </p>
                 </div>
-            </div>
-        </>
+            </a>
+        </motion.div>
     );
 }

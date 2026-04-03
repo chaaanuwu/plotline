@@ -2,11 +2,11 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import useUserStore from "../store/userStore";
 import Modal from "./ui/Modal";
-import { 
-  ArrowRightStartOnRectangleIcon, 
-  FilmIcon, 
-  HomeIcon, 
-  TicketIcon 
+import {
+  ArrowRightStartOnRectangleIcon,
+  FilmIcon,
+  HomeIcon,
+  TicketIcon
 } from "@heroicons/react/24/outline";
 import SearchBar from "./ui/SearchBar";
 
@@ -24,7 +24,7 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[100] flex justify-center p-4 pointer-events-none">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center p-4 pointer-events-none">
       {/* GLASS CONTAINER */}
       <div className="w-full max-w-6xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] rounded-3xl px-4 md:px-8 py-2 flex justify-between items-center pointer-events-auto transition-all duration-500">
 
@@ -40,14 +40,14 @@ export default function Navbar() {
 
         {/* CENTER NAVIGATION & SEARCH */}
         <div className="flex items-center flex-1 max-w-2xl px-6 gap-2">
-            <div className="hidden md:flex items-center gap-1 bg-stone-100/50 p-1 rounded-2xl border border-stone-200/50">
-                <NavLink to="/" active={isActive('/')} icon={<HomeIcon className="size-4" />} label="Home" />
-                <NavLink to="/movies" active={isActive('/movies')} icon={<TicketIcon className="size-4" />} label="Movies" />
-            </div>
-            
-            <div className="flex-1">
-                <SearchBar />
-            </div>
+          <div className="hidden md:flex items-center gap-1 bg-stone-100/50 p-1 rounded-2xl border border-stone-200/50 ">
+            <NavLink to="/" active={isActive('/')} icon={<HomeIcon className="size-4 text-amber-600" />} label="Home" />
+            <NavLink to="/movies" active={isActive('/movies')} icon={<TicketIcon className="size-4 text-amber-600" />} label="Movies" />
+          </div>
+
+          <div className="flex-1">
+            <SearchBar />
+          </div>
         </div>
 
         {/* ACTIONS */}
@@ -66,7 +66,7 @@ export default function Navbar() {
                       alt="Profile"
                     />
                   ) : (
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 border-2 border-white shadow-md flex items-center justify-center text-[11px] font-black text-white group-hover:scale-105 transition-transform">
+                    <div className="w-9 h-9 rounded-xl bg-linear-to-br from-amber-500 to-amber-600 border-2 border-white shadow-md flex items-center justify-center text-[11px] font-black text-white group-hover:scale-105 transition-transform">
                       {getUserInitials()}
                     </div>
                   )}
@@ -94,34 +94,56 @@ export default function Navbar() {
         </div>
       </div>
 
-      <Modal
-        open={open}
-        setOpen={setOpen}
-        title={"Logout"}
-        icon={<ArrowRightStartOnRectangleIcon className="size-6 text-red-600" />}
-        description={"Are you sure you want to logout? You'll need to sign back in to review movies."}
-        confirmText={"Logout"}
-        cancelText={"Cancel"}
-        confirmClassName={"bg-red-600 hover:bg-red-700"}
-        onConfirm={logout}
-      />
+      <Modal open={open} setOpen={setOpen}>
+        <div className="p-8 md:p-12">
+          <div className="flex flex-col items-center text-center">
+            {/* Icon Container */}
+            <div className="size-16 mb-6 flex items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100">
+              <ArrowRightStartOnRectangleIcon className="size-8" />
+            </div>
+
+            {/* Text Content */}
+            <h3 className="text-2xl font-bold text-stone-900 tracking-tight">
+              Confirm Logout
+            </h3>
+            <p className="mt-3 text-stone-500 max-w-sm leading-relaxed">
+              Are you sure you want to logout? You'll need to sign back in to review movies.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="mt-10 flex flex-col sm:flex-row gap-3 w-full max-w-md z-200">
+              <button
+                onClick={logout}
+                className="flex-1 px-6 py-4 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all active:scale-95 shadow-lg shadow-red-600/20"
+              >
+                Logout Now
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                className="flex-1 px-6 py-4 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold transition-all active:scale-95"
+              >
+                Stay Signed In
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </nav>
   );
 }
 
 // Sub-component for cleaner nav links
 function NavLink({ to, active, icon, label }) {
-    return (
-        <Link 
-            to={to} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                active 
-                ? "bg-white text-amber-600 shadow-sm" 
-                : "text-stone-400 hover:text-stone-900"
-            }`}
-        >
-            {icon}
-            <span className="hidden lg:inline">{label}</span>
-        </Link>
-    );
+  return (
+    <Link
+      to={to}
+      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${active
+          ? "bg-white text-amber-600 shadow-sm"
+          : "text-stone-400 hover:text-stone-900"
+        }`}
+    >
+      {icon}
+      <span className="hidden lg:inline text-amber-600">{label}</span>
+    </Link>
+  );
 }
