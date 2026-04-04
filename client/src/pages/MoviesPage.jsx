@@ -18,7 +18,6 @@ export default function MoviesPage() {
                 setTrendingMovies(movies);
 
                 if (movies.length > 0) {
-                    // Pick a random movie for the hero spotlight
                     const randomIndex = Math.floor(Math.random() * movies.length);
                     setFeaturedMovie(movies[randomIndex]);
                 }
@@ -48,8 +47,8 @@ export default function MoviesPage() {
                     alt="Featured backdrop"
                 />
 
-                {/* Cinematic Gradient & Content Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-50 via-stone-900/20 to-transparent flex flex-col justify-end px-6 md:px-12 pb-20">
+                {/* Gradient & Content Overlay */}
+                <div className="absolute inset-0 bg-linear-to-t from-stone-50 via-stone-900/20 to-transparent flex flex-col justify-end px-6 md:px-12 pb-20">
                     <motion.div
                         initial={{ y: 30, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
@@ -69,8 +68,8 @@ export default function MoviesPage() {
                 </div>
             </div>
 
-            {/* 2. TRENDING SECTION */}
             <main className="px-6 md:px-16 -mt-16 relative z-20 pb-24">
+                {/* 2. TRENDING SECTION */}
                 <MovieSlider
                     title="Trending"
                     subtitle="Global Cinema"
@@ -96,11 +95,11 @@ function MovieSlider({ title, subtitle, movies }) {
     if (!movies || movies.length === 0) return null;
 
     return (
-        <section className="group relative">
+        <section className="relative">
             <div className="flex items-end justify-between mb-8 px-2">
                 <div>
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="h-[2px] w-6 bg-amber-500/40" />
+                        <div className="h-0.5 w-6 bg-amber-500/40" />
                         <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400">{subtitle}</h5>
                     </div>
                     <h2 className="text-3xl md:text-4xl font-black tracking-tighter text-stone-900">{title}</h2>
@@ -134,14 +133,14 @@ function MovieSlider({ title, subtitle, movies }) {
                 {movies.map((movie) => (
                     <div
                         key={movie.id}
-                        className="min-w-[160px] sm:min-w-[200px] md:min-w-[220px] snap-start"
+                        className="min-w-40 sm:min-w-50 md:min-w-55 snap-start"
                     >
                         <MovieCard
                             id={movie?._id}
-                            title={movie.title || movie.name}
+                            title={movie.title}
                             poster={movie.posterPath}
                             rating={movie.voteAverage}
-                            releaseDate={movie.releaseDate || movie.firstAirDate}
+                            releaseDate={movie.releaseDate}
                         />
                     </div>
                 ))}
