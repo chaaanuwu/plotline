@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMovieById } from "../api/movie.api";
 import Loader from "../components/ui/Loader";
-import { useParams } from "react-router-dom";
 
 export default function MoviePage() {
     const [movieData, setMovieData] = useState(null);

@@ -5,8 +5,8 @@ const reviewSchema = new mongoose.Schema({
     movieId: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie', required: true },
     review: { type: String, required: true },
     likedBy: { type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] },
-    createdAt: { type: Date, default: Date.now() },
-    updatedAt: { type: Date, default: Date.now() }
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 export default mongoose.model("Review", reviewSchema);
