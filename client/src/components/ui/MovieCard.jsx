@@ -21,7 +21,7 @@ export default function MovieCard({
                     <img
                         src={`${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${poster}`}
                         alt={`${title} Poster`}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-700"
                         draggable="false"
                         loading="lazy"
                     />

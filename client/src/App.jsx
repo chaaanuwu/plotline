@@ -8,7 +8,7 @@ import Profile from "./pages/Profile";
 import useAuthLoader from "./hooks/useAuthLoader";
 import MoviePage from "./pages/MoviePage";
 import Navbar from "./components/Navbar";
-import TmdbMovie from "./pages/TmdbMovies";
+import TmdbMovie from "./pages/MoviesPage";
 
 function isTokenExpired(token) {
     if (!token) return true;
