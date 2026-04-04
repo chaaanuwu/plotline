@@ -190,7 +190,7 @@ export default function Profile() {
 
             {/* Modal for Cover Selection */}
             <Modal open={open} setOpen={setOpen}>
-                <div className="flex flex-col h-[90vh] max-h-[900px]">
+                <div className="flex flex-col h-[90vh] max-h-225">
                     {/* Header */}
                     <div className="p-6 md:p-10 border-b border-stone-100 bg-white/80 backdrop-blur-md sticky top-0 z-10">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -208,7 +208,6 @@ export default function Profile() {
                         </div>
                     </div>
 
-                    {/* Content Area */}
                     <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar bg-stone-50/30">
                         {banners.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
@@ -219,11 +218,11 @@ export default function Profile() {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
                                         whileHover={{ scale: 1.02 }}
-                                        className={`group relative aspect-video rounded-[2rem] overflow-hidden cursor-pointer bg-stone-200 border-4
+                                        className={`group relative aspect-video rounded-4xl overflow-hidden cursor-pointer bg-stone-200 border-4
                                             ${selectedBackdrop === banner?.backdropPath ? "border-amber-500/70" : "border-white"}
                                             shadow-xl transition-all hover:shadow-amber-500/20 hover:border-amber-500/40`}
                                         onClick={() => {
-                                            setSelectedBackdrop(banner?.backdropPath); // ✅ Select banner
+                                            setSelectedBackdrop(banner?.backdropPath);
                                         }}
                                     >
                                         <img
@@ -231,7 +230,7 @@ export default function Profile() {
                                             alt={banner?.title}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
+                                        <div className="absolute inset-0 bg-linear-to-t from-stone-900 via-stone-900/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
                                         <div className="absolute inset-0 flex flex-col justify-end p-8 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                                             <div className="flex items-center justify-between">
                                                 <div className="max-w-[80%]">
@@ -263,7 +262,6 @@ export default function Profile() {
                         )}
                     </div>
 
-                    {/* ✅ Save & Cancel Buttons */}
                     {selectedBackdrop && (
                         <div className="p-6 border-t border-stone-100 bg-white/80 backdrop-blur-md sticky bottom-0 flex justify-end gap-4">
                             <button
@@ -273,7 +271,7 @@ export default function Profile() {
                                 Cancel
                             </button>
                             <button
-                                onClick={handleSaveCover} // ✅ Save cover on click
+                                onClick={handleSaveCover}
                                 className="px-6 py-3 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-all"
                             >
                                 Save Cover

@@ -1,6 +1,6 @@
 import WatchList from '../models/watchList.model.js';
 import History from '../models/history.model.js';
-import { getOrCreateMovie } from '../utils/movie.utils.js';
+import { getOrCreateMovie } from '../services/movie.service.js';
 
 export const getWatchListMovie = async (req, res) => {
   try {
