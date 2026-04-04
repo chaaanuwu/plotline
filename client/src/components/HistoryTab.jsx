@@ -83,11 +83,11 @@ export default function HistoryTab() {
                     >
                         {/* THE TIMELINE HEADER */}
                         <div className="sticky top-0 z-10 py-4 bg-white/80 backdrop-blur-md flex items-center gap-4 mb-6">
-                            <div className="h-[1px] w-12 bg-amber-600/30" />
+                            <div className="h-px w-12 bg-amber-600/30" />
                             <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400">
                                 {date}
                             </h2>
-                            <div className="h-[1px] flex-1 bg-stone-100" />
+                            <div className="h-px flex-1 bg-stone-100" />
                         </div>
 
                         {/* MOVIE GRID */}

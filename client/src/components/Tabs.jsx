@@ -70,7 +70,7 @@ export default function Tabs({ profileData, isMyProfile }) {
             </div>
 
             {/* 2. CONTENT AREA */}
-            <div className="p-6 md:p-10 min-h-[400px]">
+            <div className="p-6 md:p-10 min-h-100">
                 <AnimatePresence mode="wait">
                     {loading ? (
                         <motion.div 

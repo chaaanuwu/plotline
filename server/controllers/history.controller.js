@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import History from "../models/history.model.js";
 import WatchList from "../models/watchList.model.js";
-import { getOrCreateMovie } from "../utils/movie.utils.js";
+import { getOrCreateMovie } from "../services/movie.service.js";
 
 /**
  * Get current user's watched movies
