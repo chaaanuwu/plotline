@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { getTrendingMovies } from "../api/tmdb.api";
+import { getTopRatedMovies, getTrendingMovies } from "../api/tmdb.api";
 import MovieCard from "../components/ui/MovieCard";
 import Loader from "../components/ui/Loader";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
@@ -8,16 +8,22 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 export default function MoviesPage() {
     const [loading, setLoading] = useState(true);
     const [trendingMovies, setTrendingMovies] = useState([]);
+    const [topRatedMovies, setTopRatedMovies] = useState([]);
     const [featuredMovie, setFeaturedMovie] = useState(null);
 
     useEffect(() => {
-        const fetchTrending = async () => {
+        const fetchData = async () => {
             try {
-                const res = await getTrendingMovies();
-                const movies = res.data || [];
+                const trendingRes = await getTrendingMovies();
+                const movies = trendingRes.data || [];
                 setTrendingMovies(movies);
 
+                const topRatedRes = await getTopRatedMovies();
+                const topRatedMovies = topRatedRes.data || [];
+                setTopRatedMovies(topRatedMovies);
+
                 if (movies.length > 0) {
+                    setFeaturedMovie(null);
                     const randomIndex = Math.floor(Math.random() * movies.length);
                     setFeaturedMovie(movies[randomIndex]);
                 }
@@ -28,10 +34,10 @@ export default function MoviesPage() {
             }
         };
 
-        fetchTrending();
+        fetchData();
     }, []);
 
-    if (loading) return <Loader />;
+    if (loading || !featuredMovie) return <Loader />;
 
     return (
         <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-amber-200">
@@ -58,9 +64,11 @@ export default function MoviesPage() {
                         <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500 mb-4">
                             Featured Spotlight
                         </h3>
-                        <h1 className="text-4xl md:text-7xl font-black text-stone-900 tracking-tighter mb-4 leading-none">
-                            {featuredMovie?.title || featuredMovie?.name}
-                        </h1>
+                        <a href={`/movies/${featuredMovie?._id}`}>
+                            <h1 className="text-4xl md:text-7xl font-black text-stone-900 tracking-tighter mb-4 leading-none">
+                                {featuredMovie?.title}
+                            </h1>
+                        </a>
                         <p className="text-stone-600 text-sm md:text-lg font-serif italic line-clamp-3 max-w-xl">
                             {featuredMovie?.overview}
                         </p>
@@ -74,6 +82,12 @@ export default function MoviesPage() {
                     title="Trending"
                     subtitle="Global Cinema"
                     movies={trendingMovies}
+                />
+
+                <MovieSlider
+                    title="Top Rated"
+                    subtitle="Critically Acclaimed"
+                    movies={topRatedMovies}
                 />
             </main>
         </div>
@@ -96,7 +110,7 @@ function MovieSlider({ title, subtitle, movies }) {
 
     return (
         <section className="relative">
-            <div className="flex items-end justify-between mb-8 px-2">
+            <div className="flex items-end justify-between mb-8 px-2 mt-8">
                 <div>
                     <div className="flex items-center gap-3 mb-2">
                         <div className="h-0.5 w-6 bg-amber-500/40" />
