@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import useUserStore from "../store/userStore";
 import Modal from "./ui/Modal";
@@ -21,12 +21,18 @@ export default function Navbar() {
     return (userData.firstName[0] + (userData.lastName?.[0] || "")).toUpperCase();
   };
 
+  const navigate = useNavigate();
+
+  const handleSearch = (query) => {
+    navigate(`/search?q=${query}`);
+  };
+
   const isActive = (path) => location.pathname === path;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center p-4 pointer-events-none">
       {/* GLASS CONTAINER */}
-      <div className="w-full max-w-6xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] rounded-3xl px-4 md:px-8 py-2 flex justify-between items-center pointer-events-auto transition-all duration-500">
+      <div className="w-full max-w-6xl bg-white/40 backdrop-blur-xl border border-white/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] rounded-3xl px-4 md:px-8 py-2 flex justify-between items-center pointer-events-auto transition-all duration-500">
 
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-2.5 group shrink-0">
@@ -46,7 +52,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex-1">
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} />
           </div>
         </div>
 
@@ -71,7 +77,7 @@ export default function Navbar() {
                     </div>
                   )}
                 </div>
-                <span className="hidden xl:block text-xs font-black uppercase tracking-widest text-stone-600">
+                <span className="hidden xl:block text-xs font-black uppercase tracking-widest text-stone-800">
                   {user?.user?.firstName || user?.firstName}
                 </span>
               </Link>
@@ -138,8 +144,8 @@ function NavLink({ to, active, icon, label }) {
     <Link
       to={to}
       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${active
-          ? "bg-white text-amber-600 shadow-sm"
-          : "text-stone-400 hover:text-stone-900"
+        ? "bg-white text-amber-600 shadow-sm"
+        : "text-stone-400 hover:text-stone-900"
         }`}
     >
       {icon}

@@ -1,23 +1,46 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { getTrendingMovies } from "../api/tmdb.api";
+import { getTopRatedMovies, getTrendingMovies } from "../api/tmdb.api";
 import MovieCard from "../components/ui/MovieCard";
 import Loader from "../components/ui/Loader";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 export default function MoviesPage() {
     const [loading, setLoading] = useState(true);
-    const [trendingMovies, setTrendingMovies] = useState([]);
+
+    const [trendingMovies, setTrendingMovies] = useState(() => {
+        const cached = sessionStorage.getItem("trendingMovies");
+        return cached ? JSON.parse(cached) : [];
+    });
+
+    const [topRatedMovies, setTopRatedMovies] = useState(() => {
+        const cached = sessionStorage.getItem("topRatedMovies");
+        return cached ? JSON.parse(cached) : [];
+    });
+
     const [featuredMovie, setFeaturedMovie] = useState(null);
 
     useEffect(() => {
-        const fetchTrending = async () => {
+        const fetchData = async () => {
             try {
-                const res = await getTrendingMovies();
-                const movies = res.data || [];
-                setTrendingMovies(movies);
+                if (trendingMovies.length === 0) {
+                    const res = await getTrendingMovies();
+                    const movies = res.data || [];
+                    setTrendingMovies(movies);
+                    sessionStorage.setItem("trendingMovies", JSON.stringify(movies));
+                }
+
+                if (topRatedMovies.length === 0) {
+                    const res = await getTopRatedMovies();
+                    const movies = res.data || [];
+                    setTopRatedMovies(movies);
+                    sessionStorage.setItem("topRatedMovies", JSON.stringify(movies));
+                }
+
+                const movies = trendingMovies;
 
                 if (movies.length > 0) {
+                    setFeaturedMovie(null);
                     const randomIndex = Math.floor(Math.random() * movies.length);
                     setFeaturedMovie(movies[randomIndex]);
                 }
@@ -28,10 +51,10 @@ export default function MoviesPage() {
             }
         };
 
-        fetchTrending();
+        fetchData();
     }, []);
 
-    if (loading) return <Loader />;
+    if (loading || !featuredMovie) return <Loader />;
 
     return (
         <div className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-amber-200">
@@ -58,9 +81,11 @@ export default function MoviesPage() {
                         <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500 mb-4">
                             Featured Spotlight
                         </h3>
-                        <h1 className="text-4xl md:text-7xl font-black text-stone-900 tracking-tighter mb-4 leading-none">
-                            {featuredMovie?.title || featuredMovie?.name}
-                        </h1>
+                        <a href={`/movies/${featuredMovie?._id}`}>
+                            <h1 className="text-4xl md:text-7xl font-black text-stone-900 tracking-tighter mb-4 leading-none">
+                                {featuredMovie?.title}
+                            </h1>
+                        </a>
                         <p className="text-stone-600 text-sm md:text-lg font-serif italic line-clamp-3 max-w-xl">
                             {featuredMovie?.overview}
                         </p>
@@ -74,6 +99,12 @@ export default function MoviesPage() {
                     title="Trending"
                     subtitle="Global Cinema"
                     movies={trendingMovies}
+                />
+
+                <MovieSlider
+                    title="Top Rated"
+                    subtitle="Critically Acclaimed"
+                    movies={topRatedMovies}
                 />
             </main>
         </div>
@@ -96,7 +127,7 @@ function MovieSlider({ title, subtitle, movies }) {
 
     return (
         <section className="relative">
-            <div className="flex items-end justify-between mb-8 px-2">
+            <div className="flex items-end justify-between mb-8 px-2 mt-8">
                 <div>
                     <div className="flex items-center gap-3 mb-2">
                         <div className="h-0.5 w-6 bg-amber-500/40" />
@@ -132,7 +163,7 @@ function MovieSlider({ title, subtitle, movies }) {
             >
                 {movies.map((movie) => (
                     <div
-                        key={movie.id}
+                        key={movie._id}
                         className="min-w-40 sm:min-w-50 md:min-w-55 snap-start"
                     >
                         <MovieCard

@@ -1,27 +1,27 @@
 import axios from "axios";
+import TopRatedMovies from "../models/TopRated.model.js";
 import { TMDB_BASE_URL, TMDB_KEY } from "../config/env.js";
 import Movie from "../models/movie.model.js";
-import TrendingMovies from "../models/trending.model.js";
-import { genreMap } from '../utils/movieGenre.utils.js';
+import { genreMap } from "../utils/movieGenre.utils.js";
 
-export const fetchAndStoreTrending = async () => {
+export const fetchAndStoreTopRated = async () => {
     try {
         const today = new Date().toISOString().split('T')[0];
 
-        const existing = await TrendingMovies.findOne({ date: today });
+        const existing = await TopRatedMovies.findOne({ date: today });
         if (existing) return;
 
-        const res = await axios.get(`${TMDB_BASE_URL}/trending/movie/day`, {
+        const res = await axios.get(`${TMDB_BASE_URL}/movie/top_rated`, {
             params: { api_key: TMDB_KEY }
         });
 
-        const moviesFromTMDB = res.data.results;
+        const movieFromTMDB = res.data.results;
 
         // console.log(moviesFromTMDB);
 
-        const moviesDocs = [];
+        const movieDocs = [];
 
-        for (const movie of moviesFromTMDB) {
+        for (const movie of movieFromTMDB) {
             const doc = await Movie.findOneAndUpdate(
                 { movieId: movie.id },
                 {
@@ -44,17 +44,17 @@ export const fetchAndStoreTrending = async () => {
                 { upsert: true, returnDocument: 'after' }
             );
 
-            moviesDocs.push(doc._id);
+            movieDocs.push(doc._id);
         }
 
-        await TrendingMovies.create({
-            movies: moviesDocs,
+        await TopRatedMovies.create({
+            movies: movieDocs,
             date: today
         });
 
-        console.log("✅ Trending movies updated");
+        console.log("✅ Top rated movies updated");
 
     } catch (error) {
-        console.error("Trending cron failed: ", error.message);
+        console.error("Top rated cron failed: ", error.message);
     }
 }

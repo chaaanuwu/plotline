@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function SearchBar({ placeholder = "Search..." }) {
+export default function SearchBar({
+    placeholder = "Search...",
+    onSearch
+}) {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef(null);
@@ -46,6 +49,13 @@ export default function SearchBar({ placeholder = "Search..." }) {
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            const trimmed = query.trim();
+                            if (!trimmed) return;
+                            onSearch?.(trimmed);
+                        }
+                    }}
                     className="w-full bg-transparent border-none px-4 py-4 text-stone-800 placeholder-stone-400 focus:ring-0 text-sm md:text-base font-medium outline-none"
                 />
 
@@ -73,7 +83,10 @@ export default function SearchBar({ placeholder = "Search..." }) {
                     <motion.button
                         initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        onClick={() => setQuery("")}
+                        onClick={() => {
+                            setQuery("");
+                            onSearch?.("");
+                        }}
                         className="pr-4 text-xs font-bold text-amber-600 hover:text-amber-700 transition-colors"
                     >
                         Clear

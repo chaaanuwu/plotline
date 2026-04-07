@@ -15,6 +15,7 @@ import movieRouter from './routes/movie.route.js';
 import tmdbRouter from './routes/tmdb.routes.js';
 import "./cron/trending.cron.js";
 import { fetchAndStoreTrending } from './services/trending.service.js';
+import { fetchAndStoreTopRated } from './services/topRated.service.js';
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(express.urlencoded({ extended: false}));
 
 // Remove this line when deployed, as the cron will handle it
 fetchAndStoreTrending().then(() => console.log("🔥 Initial trending fetched"));
+fetchAndStoreTopRated().then(() => console.log("🔥 Initial top rated fetched"));
 
 app.use(`${BASE_URL}/auth`, authRouter);
 app.use(`${BASE_URL}/user`, userRouter);
