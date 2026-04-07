@@ -22,7 +22,7 @@ export const getUserMe = async (req, res) => {
         }
 
         res.status(200).json({ success: true, user });
-        
+
     } catch (error) {
         console.error("getUserMe controller error:", error);
         res.status(500).json({
@@ -80,4 +80,29 @@ export const getUser = async (req, res) => {
         console.error(error);
         res.status(500).json({ success: false, error: "Server error" });
     }
-} 
+}
+
+export const searchUsers = async (req, res) => {
+    try {
+        const query = req.query.q;
+
+        if (!query || query.trim() === "") {
+            return res.status(400).json({ success: false, error: "Query parameter 'q' is required" });
+        }
+
+        const regex = new RegExp(query, 'i');
+        const users = await User.find({
+            $or: [
+                { firstName: regex },
+                { lastName: regex },
+                { about: regex }
+            ]
+        }).select('-password');
+
+        res.status(200).json({ success: true, users });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: "Server error" });
+    }
+}

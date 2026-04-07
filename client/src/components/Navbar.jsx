@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import useUserStore from "../store/userStore";
 import Modal from "./ui/Modal";
@@ -19,6 +19,12 @@ export default function Navbar() {
     const userData = user?.user || user;
     if (!userData?.firstName) return "U";
     return (userData.firstName[0] + (userData.lastName?.[0] || "")).toUpperCase();
+  };
+
+  const navigate = useNavigate();
+
+  const handleSearch = (query) => {
+    navigate(`/search?q=${query}`);
   };
 
   const isActive = (path) => location.pathname === path;
@@ -46,7 +52,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex-1">
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} />
           </div>
         </div>
 
@@ -138,8 +144,8 @@ function NavLink({ to, active, icon, label }) {
     <Link
       to={to}
       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${active
-          ? "bg-white text-amber-600 shadow-sm"
-          : "text-stone-400 hover:text-stone-900"
+        ? "bg-white text-amber-600 shadow-sm"
+        : "text-stone-400 hover:text-stone-900"
         }`}
     >
       {icon}

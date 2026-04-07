@@ -13,3 +13,8 @@ export const setProfileCover = async (backdrop) => {
 
     return res.data;
 }
+
+export const searchUsers = async (query) => {
+    const res = await axiosInstance.get(`/user/search?q=${query}`);
+    return res.data;
+}

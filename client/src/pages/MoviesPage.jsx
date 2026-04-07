@@ -7,20 +7,37 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 export default function MoviesPage() {
     const [loading, setLoading] = useState(true);
-    const [trendingMovies, setTrendingMovies] = useState([]);
-    const [topRatedMovies, setTopRatedMovies] = useState([]);
+
+    const [trendingMovies, setTrendingMovies] = useState(() => {
+        const cached = sessionStorage.getItem("trendingMovies");
+        return cached ? JSON.parse(cached) : [];
+    });
+
+    const [topRatedMovies, setTopRatedMovies] = useState(() => {
+        const cached = sessionStorage.getItem("topRatedMovies");
+        return cached ? JSON.parse(cached) : [];
+    });
+
     const [featuredMovie, setFeaturedMovie] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const trendingRes = await getTrendingMovies();
-                const movies = trendingRes.data || [];
-                setTrendingMovies(movies);
+                if (trendingMovies.length === 0) {
+                    const res = await getTrendingMovies();
+                    const movies = res.data || [];
+                    setTrendingMovies(movies);
+                    sessionStorage.setItem("trendingMovies", JSON.stringify(movies));
+                }
 
-                const topRatedRes = await getTopRatedMovies();
-                const topRatedMovies = topRatedRes.data || [];
-                setTopRatedMovies(topRatedMovies);
+                if (topRatedMovies.length === 0) {
+                    const res = await getTopRatedMovies();
+                    const movies = res.data || [];
+                    setTopRatedMovies(movies);
+                    sessionStorage.setItem("topRatedMovies", JSON.stringify(movies));
+                }
+
+                const movies = trendingMovies;
 
                 if (movies.length > 0) {
                     setFeaturedMovie(null);
@@ -146,7 +163,7 @@ function MovieSlider({ title, subtitle, movies }) {
             >
                 {movies.map((movie) => (
                     <div
-                        key={movie.id}
+                        key={movie._id}
                         className="min-w-40 sm:min-w-50 md:min-w-55 snap-start"
                     >
                         <MovieCard

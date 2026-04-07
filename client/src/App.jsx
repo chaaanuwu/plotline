@@ -9,6 +9,7 @@ import useAuthLoader from "./hooks/useAuthLoader";
 import MoviePage from "./pages/MoviePage";
 import Navbar from "./components/Navbar";
 import TmdbMovie from "./pages/MoviesPage";
+import SearchResultPage from "./pages/SearchResultPage";
 
 function isTokenExpired(token) {
     if (!token) return true;
@@ -37,7 +38,7 @@ export default function App() {
 
     return (
         <BrowserRouter>
-                  <Navbar />
+            <Navbar />
 
             <Routes>
 
@@ -94,6 +95,15 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <MoviePage />
+                            : <Navigate to="/login" />
+                    }
+                />
+
+                <Route
+                    path="/search"
+                    element={
+                        token && !isExpired
+                            ? <SearchResultPage />
                             : <Navigate to="/login" />
                     }
                 />
