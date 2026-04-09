@@ -38,6 +38,29 @@ export const getWatchedMovies = async (req, res) => {
   }
 };
 
+/**
+ * Get current user's watched movie
+ */
+export const isMovieWatched = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const movieId = req.params.movieId;
+
+    const history = await History.findOne({ userId, movieId }).lean();
+
+    res.status(200).json({
+      success: true,
+      data: history
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      error: "Server error"
+    });
+  }
+}
 
 /**
  * Add a movie to watched list
