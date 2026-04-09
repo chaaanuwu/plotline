@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import useUserStore from "../store/userStore";
 import Modal from "./ui/Modal";
 import {
@@ -9,11 +9,27 @@ import {
   TicketIcon
 } from "@heroicons/react/24/outline";
 import SearchBar from "./ui/SearchBar";
+import Dropdown from "./ui/Dropdown";
+import { ClockIcon } from "lucide-react";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, logout } = useUserStore();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const searchWrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const getUserInitials = () => {
     const userData = user?.user || user;
@@ -21,20 +37,41 @@ export default function Navbar() {
     return (userData.firstName[0] + (userData.lastName?.[0] || "")).toUpperCase();
   };
 
-  const navigate = useNavigate();
+  // Save search query to localStorage
+  const saveSearchQuery = (query) => {
+    if (!query.trim()) return;
+    const key = "searchHistory";
+    let history = JSON.parse(localStorage.getItem(key)) || [];
 
+    // Remove duplicate if exists
+    history = history.filter(item => item.query !== query);
+
+    history.unshift({ query, timeStamp: Date.now() });
+
+    if (history.length > 5) history.pop();
+
+    localStorage.setItem(key, JSON.stringify(history));
+  };
+
+  // Handle search
   const handleSearch = (query) => {
+    if (!query.trim()) return;
+
+    saveSearchQuery(query);
+    
     navigate(`/search?q=${query}`);
+    setIsDropdownOpen(false);
   };
 
   const isActive = (path) => location.pathname === path;
 
+  // Get search history
+  const searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || [];
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center p-4 pointer-events-none">
-      {/* GLASS CONTAINER */}
       <div className="w-full max-w-6xl bg-white/40 backdrop-blur-xl border border-white/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] rounded-3xl px-4 md:px-8 py-2 flex justify-between items-center pointer-events-auto transition-all duration-500">
 
-        {/* LOGO */}
         <Link to="/" className="flex items-center gap-2.5 group shrink-0">
           <div className="w-9 h-9 bg-stone-950 rounded-xl flex items-center justify-center text-amber-500 group-hover:rotate-12 transition-all duration-300 shadow-lg shadow-amber-900/20">
             <FilmIcon className="size-5" />
@@ -44,19 +81,53 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* CENTER NAVIGATION & SEARCH */}
         <div className="flex items-center flex-1 max-w-2xl px-6 gap-2">
           <div className="hidden md:flex items-center gap-1 bg-stone-100/50 p-1 rounded-2xl border border-stone-200/50 ">
             <NavLink to="/" active={isActive('/')} icon={<HomeIcon className="size-4 text-amber-600" />} label="Home" />
             <NavLink to="/movies" active={isActive('/movies')} icon={<TicketIcon className="size-4 text-amber-600" />} label="Movies" />
           </div>
 
-          <div className="flex-1">
-            <SearchBar onSearch={handleSearch} />
+          {/* SEARCH BAR + DROPDOWN */}
+          <div ref={searchWrapperRef} className="relative w-full max-w-md mx-auto">
+            <SearchBar
+              onSearch={handleSearch}
+              onFocus={() => setIsDropdownOpen(true)}
+            />
+
+            {/* We move the dropdown styles here or into the component */}
+            <Dropdown open={isDropdownOpen}>
+              <div className="w-full min-w-75 md:min-w-112.5 p-2 bg-white/90 backdrop-blur-xl">
+                <div className="px-3 py-2 border-b border-stone-100 mb-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+                    Recent Searches
+                  </span>
+                </div>
+
+                {searchHistory.length > 0 ? (
+                  <div className="flex flex-col gap-1">
+                    {searchHistory.map((item, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSearch(item.query)}
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-stone-100 transition-all w-full text-left group"
+                      >
+                        <div className="p-2 rounded-lg bg-stone-50 group-hover:bg-white transition-colors">
+                          <ClockIcon className="size-4 text-stone-400" />
+                        </div>
+                        <span className="font-medium text-stone-700">{item.query}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center">
+                    <p className="text-sm text-stone-400 font-medium">No recent searches found</p>
+                  </div>
+                )}
+              </div>
+            </Dropdown>
           </div>
         </div>
 
-        {/* ACTIONS */}
         <div className="flex items-center gap-3 md:gap-5 shrink-0">
           {user ? (
             <>
@@ -83,7 +154,7 @@ export default function Navbar() {
               </Link>
 
               <button
-                onClick={() => setOpen(true)}
+                onClick={() => setIsModalOpen(true)}
                 className="w-10 h-10 flex items-center justify-center rounded-xl text-stone-400 hover:text-red-600 hover:bg-red-50 hover:shadow-inner transition-all duration-300"
               >
                 <ArrowRightStartOnRectangleIcon className="size-5" />
@@ -100,15 +171,13 @@ export default function Navbar() {
         </div>
       </div>
 
-      <Modal open={open} setOpen={setOpen}>
+      <Modal open={isModalOpen} setOpen={setIsModalOpen}>
         <div className="p-8 md:p-12">
           <div className="flex flex-col items-center text-center">
-            {/* Icon Container */}
             <div className="size-16 mb-6 flex items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100">
               <ArrowRightStartOnRectangleIcon className="size-8" />
             </div>
 
-            {/* Text Content */}
             <h3 className="text-2xl font-bold text-stone-900 tracking-tight">
               Confirm Logout
             </h3>
@@ -116,7 +185,6 @@ export default function Navbar() {
               Are you sure you want to logout? You'll need to sign back in to review movies.
             </p>
 
-            {/* Action Buttons */}
             <div className="mt-10 flex flex-col sm:flex-row gap-3 w-full max-w-md z-200">
               <button
                 onClick={logout}
@@ -125,7 +193,7 @@ export default function Navbar() {
                 Logout Now
               </button>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => setIsModalOpen(false)}
                 className="flex-1 px-6 py-4 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold transition-all active:scale-95"
               >
                 Stay Signed In
@@ -138,7 +206,6 @@ export default function Navbar() {
   );
 }
 
-// Sub-component for cleaner nav links
 function NavLink({ to, active, icon, label }) {
   return (
     <Link

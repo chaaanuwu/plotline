@@ -4,7 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export default function SearchBar({
     placeholder = "Search...",
-    onSearch
+    onSearch,
+    onFocus
 }) {
     const [query, setQuery] = useState("");
     const [isFocused, setIsFocused] = useState(false);
@@ -46,7 +47,10 @@ export default function SearchBar({
                     type="text"
                     placeholder={placeholder}
                     value={query}
-                    onFocus={() => setIsFocused(true)}
+                    onFocus={() => {
+                        setIsFocused(true);
+                        onFocus?.();
+                    }}
                     onBlur={() => setIsFocused(false)}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => {
