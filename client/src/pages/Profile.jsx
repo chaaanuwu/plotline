@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import bbBg from "../assets/bb-bg.jpg";
 import defaultPfp from "../assets/default-pfp.jpg";
@@ -11,11 +11,13 @@ import Loader from "../components/ui/Loader";
 import Modal from "../components/ui/Modal";
 import SearchBar from "../components/ui/SearchBar";
 import { getHistoryBanner } from "../api/history.api";
+import Dropdown from "../components/ui/Dropdown";
 
 export default function Profile() {
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [open, setOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [banners, setBanners] = useState([]);
     const [selectedBackdrop, setSelectedBackdrop] = useState(null);
     const user = useUserStore((state) => state.user);
@@ -37,7 +39,7 @@ export default function Profile() {
     }, [userId]);
 
     const handleChangeCover = async () => {
-        setOpen(true);
+        setIsModalOpen(true);
         try {
             const bannerData = await getHistoryBanner();
             const movies = bannerData.data.map(item => item.movieId);
@@ -58,7 +60,7 @@ export default function Profile() {
                     cover: selectedBackdrop
                 }
             }));
-            setOpen(false);
+            setIsModalOpen(false);
             setSelectedBackdrop(null);
         } catch (err) {
             console.error("Failed to set profile cover", err);
@@ -77,7 +79,7 @@ export default function Profile() {
                     initial={{ scale: 1.1, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.8 }}
-                    src={`${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${profileData.user.cover}` || bbBg}
+                    src={profileData.user.cover ? `${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${profileData.user.cover}` : bbBg}
                     alt="Cover"
                     className="w-full h-full object-cover"
                     draggable="false"
@@ -150,9 +152,28 @@ export default function Profile() {
                                 </button>
                             )}
 
-                            <button className="w-14 h-14 flex items-center justify-center bg-white border border-stone-200 rounded-2xl text-stone-400 hover:text-stone-900 transition-all shadow-sm active:scale-95">
-                                <span className="material-symbols-outlined text-2xl">more_horiz</span>
-                            </button>
+                            {/* DROPDOWN CONTAINER */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                    className="w-14 h-14 flex items-center justify-center bg-white border border-stone-200 rounded-2xl text-stone-400 hover:text-stone-900 transition-all shadow-sm active:scale-95"
+                                >
+                                    <span className="material-symbols-outlined text-2xl">more_horiz</span>
+                                </button>
+                                
+                                <Dropdown open={isDropdownOpen} setOpen={setIsDropdownOpen}>
+                                    <div className="p-2 min-w-40">
+                                        <button className="w-full text-left p-2 text-sm font-bold text-stone-600 hover:bg-stone-50 rounded-lg transition-colors uppercase tracking-wider">
+                                            Share Profile
+                                        </button>
+                                        {isMyProfile && (
+                                            <button className="w-full text-left p-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors uppercase tracking-wider">
+                                                Settings
+                                            </button>
+                                        )}
+                                    </div>
+                                </Dropdown>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
@@ -189,7 +210,7 @@ export default function Profile() {
             </div>
 
             {/* Modal for Cover Selection */}
-            <Modal open={open} setOpen={setOpen}>
+            <Modal open={isModalOpen} setOpen={setIsModalOpen}>
                 <div className="flex flex-col h-[90vh] max-h-225">
                     {/* Header */}
                     <div className="p-6 md:p-10 border-b border-stone-100 bg-white/80 backdrop-blur-md sticky top-0 z-10">
@@ -265,7 +286,7 @@ export default function Profile() {
                     {selectedBackdrop && (
                         <div className="p-6 border-t border-stone-100 bg-white/80 backdrop-blur-md sticky bottom-0 flex justify-end gap-4">
                             <button
-                                onClick={() => setOpen(false)}
+                                onClick={() => setIsModalOpen(false)}
                                 className="px-6 py-3 bg-stone-200 rounded-xl font-bold hover:bg-stone-300 transition-all"
                             >
                                 Cancel
