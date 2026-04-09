@@ -49,7 +49,7 @@ export default function SearchResultPage() {
                 {/* 1. SEARCH HEADER */}
                 <header className="mb-12">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="h-[2px] w-8 bg-amber-500/40" />
+                        <div className="h-0.5 w-8 bg-amber-500/40" />
                         <h5 className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400">Search Results</h5>
                     </div>
                     <h1 className="text-4xl md:text-6xl font-black text-stone-900 tracking-tighter">

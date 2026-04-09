@@ -5,7 +5,8 @@ import {
     addWatchedMovie,
     updateWatchedMovie,
     removeWatchedMovie,
-    getUserHistory
+    getUserHistory,
+    isMovieWatched,
 } from "../controllers/history.controller.js";
 
 import authorize from "../middlewares/auth.middleware.js";
@@ -14,7 +15,9 @@ const historyRouter = Router();
 
 historyRouter.get('/', authorize, getWatchedMovies);
 
-historyRouter.get('/:userId', authorize, getUserHistory)
+historyRouter.get('/movie/:movieId', authorize, isMovieWatched);
+
+historyRouter.get('/:userId', authorize, getUserHistory);
 
 historyRouter.post('/', authorize, addWatchedMovie);
 

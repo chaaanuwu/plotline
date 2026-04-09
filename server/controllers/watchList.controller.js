@@ -29,6 +29,27 @@ export const getWatchListMovie = async (req, res) => {
   }
 };
 
+export const isMovieWatchListed = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const movieId = req.params.movieId;
+
+    const watchListEntry = await WatchList.findOne({ userId, movieId }).lean();
+
+    res.status(200).json({
+      success: true,
+      data: watchListEntry ? { watchListed: true } : { watchListed: false }
+    })
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      error: "Server error"
+    });
+  }
+}
+
 export const getWatchListMovies = async (req, res) => {
   try {
     const userId = req.user.userId;

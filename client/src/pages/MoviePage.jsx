@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { getMovieById } from "../api/movie.api";
 import Loader from "../components/ui/Loader";
+import { getMovieHistory } from "../api/history.api";
+import { getIsMovieWatchListed } from "../api/watchList.api";
 
 export default function MoviePage() {
     const [movieData, setMovieData] = useState(null);
@@ -16,8 +18,14 @@ export default function MoviePage() {
         if (!movieId) return;
         const fetchMovie = async () => {
             try {
-                const res = await getMovieById(movieId);
-                setMovieData(res.movie || res);
+                const res = await Promise.all([
+                    getMovieById(movieId),
+                    getMovieHistory(movieId),
+                    getIsMovieWatchListed(movieId)
+                ]);
+                setMovieData(res[0]);
+                setWatched(res[1].data != null);
+                setInList(res[2].data.watchListed);
             } catch (error) {
                 console.error("Error fetching movie: ", error);
             } finally {

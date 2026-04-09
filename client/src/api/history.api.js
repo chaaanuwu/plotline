@@ -7,6 +7,11 @@ export const getHistory = async (userId) => {
     return res.data;
 }
 
+export const getMovieHistory = async (movieId) => {
+    const res = await axiosInstance.get(`/history/movie/${movieId}`);
+    return res.data;
+}
+
 export const getHistoryBanner = async () => {
     const res = await axiosInstance.get('/history');
     return res.data;
