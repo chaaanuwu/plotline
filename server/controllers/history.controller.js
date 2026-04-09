@@ -193,7 +193,7 @@ export const removeWatchedMovie = async (req, res) => {
     }
 
     const deletedMovie = await History.findOneAndDelete({
-      _id: movieId,
+      movieId,
       userId
     }).populate("movieId", "title");
 

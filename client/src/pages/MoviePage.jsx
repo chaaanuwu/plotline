@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getMovieById } from "../api/movie.api";
 import Loader from "../components/ui/Loader";
-import { getMovieHistory } from "../api/history.api";
-import { getIsMovieWatchListed } from "../api/watchList.api";
+import { addWatchedMovie, getMovieHistory, removeMovieFromHistory } from "../api/history.api";
+import { addMovieToWatchList, getIsMovieWatchListed, removeMovieFromWatchList } from "../api/watchList.api";
+import { BookmarkIcon, CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
 
 export default function MoviePage() {
     const [movieData, setMovieData] = useState(null);
@@ -12,7 +14,7 @@ export default function MoviePage() {
     const [inList, setInList] = useState(false);
     const [reviewOpen, setReviewOpen] = useState(false);
 
-    const movieId = window.location.pathname.split("/movies/")[1];
+    const { movieId } = useParams();
 
     useEffect(() => {
         if (!movieId) return;
@@ -23,9 +25,11 @@ export default function MoviePage() {
                     getMovieHistory(movieId),
                     getIsMovieWatchListed(movieId)
                 ]);
+
                 setMovieData(res[0]);
                 setWatched(res[1].data != null);
                 setInList(res[2].data.watchListed);
+
             } catch (error) {
                 console.error("Error fetching movie: ", error);
             } finally {
@@ -34,6 +38,50 @@ export default function MoviePage() {
         };
         fetchMovie();
     }, [movieId]);
+
+    const handleWatchedToggle = async () => {
+        try {
+            if (watched) {
+                const res = await removeMovieFromHistory(movieData._id);
+                if (res.status === 200) {
+                    setWatched(false);
+                }
+            } else {
+                const res = await addWatchedMovie(movieData.title);
+
+                if (res.status === 201) {
+                    if (inList) setInList(false);
+
+                    setWatched(true);
+
+                    setMovieData((prev) => ({
+                        ...prev,
+                        ...res.data
+                    }));
+                }
+            }
+        } catch (error) {
+            console.error("Error updating watch status: ", error);
+        }
+    }
+
+    const handleWatchListToggle = async () => {
+        try {
+            if (inList) {
+                const res = await removeMovieFromWatchList(movieData._id);
+                if (res.status === 200) {
+                    setInList(false);
+                }
+            } else {
+                const res = await addMovieToWatchList(movieData.title);
+                if (res.status === 201) {
+                    setInList(true);
+                }
+            }
+        } catch (error) {
+            console.error("Error updating watchlist status: ", error);
+        }
+    }
 
     if (loading) return <Loader />;
 
@@ -108,7 +156,6 @@ export default function MoviePage() {
                         </motion.section>
                     </div>
 
-                    {/* Action Buttons */}
                     <motion.aside
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -117,17 +164,19 @@ export default function MoviePage() {
                     >
                         <ActionButton
                             active={watched}
-                            onClick={() => setWatched(!watched)}
-                            activeClass="bg-(--interaction-color) text-white border-(--interaction-color)"
+                            onClick={handleWatchedToggle}
+                            activeClass="bg-amber-400 text-white border-amber-400"
                             label={watched ? "Watched" : "Mark as watched"}
-                            icon={watched ? "✓" : "○"}
+                            trueIcon={<ClockIcon className="size-5" />}
+                            falseIcon={<CheckCircleIcon className="size-5" />}
                         />
                         <ActionButton
                             active={inList}
-                            onClick={() => setInList(!inList)}
+                            onClick={handleWatchListToggle}
                             activeClass="bg-(--secondary-color) text-white border-(--secondary-color)"
                             label={inList ? "In Watchlist" : "Add to Watchlist"}
-                            icon="+"
+                            trueIcon={<BookmarkIcon className="size-5" />}
+                            falseIcon={<BookmarkIcon className="size-5" />}
                         />
                         <button
                             onClick={() => setReviewOpen(!reviewOpen)}
@@ -142,14 +191,17 @@ export default function MoviePage() {
     );
 }
 
-function ActionButton({ active, onClick, activeClass, label, icon }) {
+function ActionButton({ active, onClick, activeClass, label, trueIcon, falseIcon }) {
     return (
         <button
             onClick={onClick}
             className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl border-2 font-bold text-sm transition-all active:scale-95 ${active ? activeClass : "bg-white border-stone-100 text-stone-700 hover:border-stone-200 shadow-sm"
                 }`}
         >
-            <span className="text-lg">{icon}</span>
+            {active ?
+                <span className="text-lg">{trueIcon}</span> :
+                <span className="text-lg">{falseIcon}</span>
+            }
             {label}
         </button>
     );
