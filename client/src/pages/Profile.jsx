@@ -12,9 +12,11 @@ import Modal from "../components/ui/Modal";
 import SearchBar from "../components/ui/SearchBar";
 import { getHistoryBanner } from "../api/history.api";
 import Dropdown from "../components/ui/Dropdown";
+import { followUser } from "../api/userFollows.api";
 
 export default function Profile() {
     const [profileData, setProfileData] = useState(null);
+    const [following, setFollowing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -27,8 +29,9 @@ export default function Profile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const data = await getProfile(userId);
-                setProfileData(data);
+                const res = await getProfile(userId);
+                setProfileData(res);
+                console.log(res);
             } catch (err) {
                 console.error("Failed to fetch profile", err);
             } finally {
@@ -37,6 +40,17 @@ export default function Profile() {
         };
         fetchProfile();
     }, [userId]);
+
+    const handleFollow = async () => {
+        try {
+            const res = await followUser(profileData.user._id);
+            if (res.status === 200) {
+                setFollowing(true);
+            }
+        } catch (error) {
+            console.error("Failed to follow user", error);
+        }
+    }
 
     const handleChangeCover = async () => {
         setIsModalOpen(true);
@@ -143,9 +157,17 @@ export default function Profile() {
                             className="flex items-center gap-3"
                         >
                             {!isMyProfile ? (
-                                <button className="px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold text-sm hover:bg-stone-800 transition-all shadow-lg active:scale-95">
-                                    Follow
-                                </button>
+                                !following ? (
+                                    <button
+                                        onClick={handleFollow}
+                                        className="px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold text-sm hover:bg-stone-800 transition-all shadow-lg active:scale-95">
+                                        Follow
+                                    </button>
+                                ) : (
+                                    <button className="px-10 py-4 bg-white border border-stone-200 text-stone-600 rounded-2xl font-bold text-sm hover:bg-stone-50 transition-all shadow-sm active:scale-95">
+                                        Unfollow
+                                    </button>
+                                )
                             ) : (
                                 <button className="px-10 py-4 bg-white border border-stone-200 text-stone-600 rounded-2xl font-bold text-sm hover:bg-stone-50 transition-all shadow-sm active:scale-95">
                                     Edit Profile
@@ -160,7 +182,7 @@ export default function Profile() {
                                 >
                                     <span className="material-symbols-outlined text-2xl">more_horiz</span>
                                 </button>
-                                
+
                                 <Dropdown open={isDropdownOpen} setOpen={setIsDropdownOpen}>
                                     <div className="p-2 min-w-40">
                                         <button className="w-full text-left p-2 text-sm font-bold text-stone-600 hover:bg-stone-50 rounded-lg transition-colors uppercase tracking-wider">
