@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import useUserStore from "../../store/userStore";
 import { toggleLikeReview } from "../../api/reviews.api";
 
@@ -19,6 +18,7 @@ export default function ReviewCard({
     releaseYear,
     imdbRating,
     genres,
+    onReplyClick
 }) {
     const [isLiked, setIsLiked] = useState(
         Array.isArray(reviewLikes)
@@ -179,7 +179,9 @@ export default function ReviewCard({
                         {formattedLikes}
                     </button>
 
-                    <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-[13px] font-semibold text-gray-600 cursor-pointer">
+                    <button
+                    onClick={onReplyClick}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-[13px] font-semibold text-gray-600 cursor-pointer">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                         </svg>

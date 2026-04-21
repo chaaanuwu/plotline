@@ -3,11 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReviewCard from "./ui/ReviewCard";
 import defaultPfp from "../assets/default-pfp.jpg";
 import { getMyReviews, getUserReviews } from "../api/reviews.api";
-import MovieCard from "./ui/MovieCard";
 import HistoryTab from "./HistoryTab";
 import Loader from "./ui/Loader";
 
-export default function Tabs({ profileData, isMyProfile }) {
+export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
     const [activeTab, setActiveTab] = useState("reviews");
     const [tabContent, setTabContent] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -111,6 +110,7 @@ export default function Tabs({ profileData, isMyProfile }) {
                                                 reviewText={r?.review}
                                                 reviewLikes={r?.likedBy}
                                                 rating={r?.rating}
+                                                onReplyClick={() => onReplyClick(r)}
                                             />
                                         ))
                                     ) : (
