@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import bbBg from "../assets/bb-bg.jpg";
 import defaultPfp from "../assets/default-pfp.jpg";
@@ -13,7 +13,7 @@ import SearchBar from "../components/ui/SearchBar";
 import { getHistoryBanner } from "../api/history.api";
 import Dropdown from "../components/ui/Dropdown";
 import { followUser } from "../api/userFollows.api";
-import { getAllComments, postComment } from "../api/commments.api";
+import { getAllComments, postComment, updateComment } from "../api/commments.api";
 
 export default function Profile() {
     const [profileData, setProfileData] = useState(null);
@@ -24,6 +24,7 @@ export default function Profile() {
     const [selectedReview, setSelectedReview] = useState(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [comments, setComments] = useState([]);
+    const [selectedComment, setSelectedComment] = useState(null);
     const [banners, setBanners] = useState([]);
     const [selectedBackdrop, setSelectedBackdrop] = useState(null);
     const user = useUserStore((state) => state.user);
@@ -68,7 +69,7 @@ export default function Profile() {
         }
     }
 
-    const handlePostComment = async (review, comment) => {
+    const handlePostComment = async () => {
         console.log(commentInputRef.current.value);
         try {
             const res = await postComment(selectedReview._id, commentInputRef.current.value);
@@ -77,6 +78,18 @@ export default function Profile() {
             }
         } catch (error) {
             console.error("Failed to post comment", error);
+        }
+    }
+
+    const handleUpdateComment = async () => {
+        try {
+            const res = await updateComment(selectedReview._id, selectedComment, "Updated comment content");
+            setSelectedComment(null);
+            if (res.data.success) {
+                console.log("Comment updated successfully");
+            }
+        } catch (error) {
+            console.error("Failed to update comment", error);
         }
     }
 
@@ -286,7 +299,34 @@ export default function Profile() {
                                     />
                                     <div className="flex-1">
                                         <div className="bg-stone-100 rounded-2xl rounded-tl-none px-4 py-3">
-                                            <p className="text-xs font-black text-stone-900">{profileData.user.firstName} {profileData.user.lastName}</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-xs font-black text-stone-900">{profileData?.user.firstName} {profileData?.user.lastName}</p>
+                                                <span className="text-[9px] text-stone-400 ml-2">{new Date(c.createdAt).toLocaleString()}</span>
+
+                                                {isMyProfile &&
+                                                    <div className="relative">
+                                                        <button
+                                                            onClick={() => setSelectedComment(selectedComment === c._id ? null : c._id)}
+                                                            className="w-5 h-5 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-95"
+                                                        >
+                                                            <span className="material-symbols-outlined text-2xl">more_horiz</span>
+                                                        </button>
+
+                                                        <Dropdown open={selectedComment === c._id} setOpen={setSelectedComment}>
+                                                            <div className="p-2 min-w-40">
+                                                                <button
+                                                                onClick={() => handleUpdateComment}
+                                                                className="w-full text-left p-2 text-sm font-bold text-stone-600 hover:bg-stone-50 rounded-lg transition-colors uppercase tracking-wider">
+                                                                    Edit Comment
+                                                                </button>
+                                                                <button className="w-full text-left p-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors uppercase tracking-wider">
+                                                                    Delete Comment
+                                                                </button>
+                                                            </div>
+                                                        </Dropdown>
+                                                    </div>
+                                                }
+                                            </div>
                                             <p className="text-sm text-stone-600 mt-1 leading-relaxed">{c.comment}</p>
                                         </div>
                                         <div className="flex gap-4 mt-2 ml-2">

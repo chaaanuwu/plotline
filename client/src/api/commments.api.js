@@ -12,7 +12,14 @@ export const postComment = async (reviewId, comment) => {
     return res;
 };
 
-export const deleteComment = async (commentId) => {
-    const res = axiosInstance.delete(`/comments/${commentId}`);
+export const updateComment = async (reviewId, commentId, updatedComment) => {
+    const res = axiosInstance.patch(`/${reviewId}/comments/${commentId}`, {
+        comment: updatedComment
+    });
     return res;
-}
+};
+
+export const deleteComment = async (reviewId, commentId) => {
+    const res = axiosInstance.delete(`/${reviewId}/comments/${commentId}`);
+    return res;
+};

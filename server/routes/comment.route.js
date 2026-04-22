@@ -2,7 +2,16 @@ import { Router } from 'express';
 
 import authorize from '../middlewares/auth.middleware.js';
 
-import { addReplyComment, addReviewComment, getAllComments, updateReplyComment, deleteReplyComment, getComment } from '../controllers/comment.controller.js';
+import {
+    addReplyComment,
+    addReviewComment,
+    getAllComments,
+    updateReplyComment,
+    deleteReplyComment,
+    getComment,
+    deleteReviewComment,
+    updateReviewComment
+} from '../controllers/comment.controller.js';
 
 const commentRouter = Router();
 
@@ -11,6 +20,10 @@ commentRouter.get('/:reviewId/comments', authorize, getAllComments);
 commentRouter.get('/:reviewId/comments/:commentId', authorize, getComment);
 
 commentRouter.post('/:reviewId/comments', authorize, addReviewComment);
+
+commentRouter.patch('/:reviewId/comments/:commentId', authorize, updateReviewComment);
+
+commentRouter.delete('/:reviewId/comments/:commentId', authorize, deleteReviewComment);
 
 commentRouter.post('/:reviewId/comments/:commentId/reply', authorize, addReplyComment);
 
