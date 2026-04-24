@@ -2,6 +2,7 @@ import generateReviewImage from '../../utils/generateReviewImage.util.js';
 import Review from '../../models/review.model.js';
 import History from '../../models/history.model.js';
 import { CLIENT_URL, TMDB_BACKDROP_BASE_URL, TMDB_POSTER_BASE_URL } from '../../config/env.js';
+import { generateQR } from '../../utils/generateQR.util.js';
 
 export const shareReviewImage = async (req, res) => {
     try {
@@ -23,6 +24,8 @@ export const shareReviewImage = async (req, res) => {
 
         const reviewLink = `${clientURL}/reviews/${reviewId}`;
 
+        const qrCode = await generateQR(reviewLink);
+
         const imageBuffer = await generateReviewImage({
             backdropUrl: TMDB_BACKDROP_BASE_URL + review.movieId.backdropPath,
             posterUrl: TMDB_POSTER_BASE_URL + review.movieId.posterPath,
@@ -35,7 +38,8 @@ export const shareReviewImage = async (req, res) => {
             userAvatarUrl: review.userId.pfp,
             rating: history.rating ? history.rating.toString() : "0",
             reviewDate: review.createdAt.toDateString().split(" ").slice(1, 3).join(" ") + ", " + review.createdAt.getFullYear(),
-            linkToReview: reviewLink
+            linkToReview: reviewLink,
+            qrCodeToReview: qrCode
         });
 
         res.set('Content-Type', 'image/png');
