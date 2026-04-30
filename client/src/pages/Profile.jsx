@@ -58,6 +58,7 @@ export default function Profile() {
     }
 
     const handleOpenReplyModal = async (review) => {
+        setComments([]);
         setSelectedReview(review);
         setIsReplyModalOpen(true);
         try {
@@ -277,135 +278,125 @@ export default function Profile() {
                 </motion.section>
             </div>
 
-            {/* FIXED: High-Fidelity Responsive Comments Modal */}
-<Modal open={isReplyModalOpen} setOpen={setIsReplyModalOpen}>
-  {/* Container: h-full on mobile to prevent keyboard overlap, h-[90vh] on desktop */}
-  <div className="flex flex-col h-dvh md:h-[90vh] md:max-h-212.5 w-full max-w-5xl mx-auto bg-white md:rounded-[3rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.25)] relative">
-    
-    {/* Header: Clean & Wide - Better mobile padding */}
-    <div className="px-4 py-4 md:px-12 md:py-10 flex items-center justify-between border-b border-stone-100 bg-white/95 backdrop-blur-md z-20 shrink-0">
-      <div className="space-y-1.5 md:space-y-1">
-        <div className="flex items-center gap-2">
-          <div className="h-0.5 w-5 md:w-6 bg-amber-500" />
-          <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-amber-500">
-            Discussion
-          </h3>
-        </div>
-        <h2 className="text-2xl md:text-4xl font-black tracking-tighter text-stone-900">
-          PlotLine Community<span className="text-amber-500">.</span>
-        </h2>
-      </div>
-      <button 
-        onClick={() => setIsReplyModalOpen(false)}
-        className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-stone-100 hover:bg-amber-400 text-stone-900 rounded-full transition-all group active:scale-95 shrink-0"
-      >
-        <span className="material-symbols-outlined text-xl md:text-2xl group-hover:rotate-90 transition-transform">
-          close
-        </span>
-      </button>
-    </div>
+            {/* Comments Modal */}
+            <Modal open={isReplyModalOpen} setOpen={setIsReplyModalOpen}>
+                <div className="flex flex-col h-dvh md:h-[90vh] md:max-h-212.5 w-full max-w-5xl mx-auto bg-white md:rounded-[3rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.25)] relative">
 
-    {/* Comments Feed: Full Width Stream - Better scrolling on mobile */}
-    <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 md:px-16 md:py-12 space-y-6 md:space-y-10 custom-scrollbar bg-stone-50/20">
-      {comments?.length > 0 ? (
-        comments.map((c) => (
-          <motion.div 
-            key={c._id} 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex gap-3 md:gap-6 group items-start max-w-4xl"
-          >
-            {/* Avatar - Better sizing on mobile */}
-            <img
-              src={c.userId?.pfp || defaultPfp}
-              className="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl object-cover shrink-0 shadow-md border-2 border-white ring-1 ring-stone-100"
-              alt="User"
-            />
-            
-            <div className="flex-1 min-w-0">
-              {/* User info row - Better wrapping on mobile */}
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                  <p className="text-sm md:text-base font-black text-stone-900">
-                    {c.userId?.firstName} {c.userId?.lastName}
-                  </p>
-                  <span className="text-[9px] md:text-[10px] font-black text-stone-400 uppercase tracking-wider">
-                    {new Date(c.createdAt).toLocaleDateString()}
-                  </span>
+                    <div className="px-4 py-4 md:px-12 md:py-10 flex items-center justify-between border-b border-stone-100 bg-white/95 backdrop-blur-md z-20 shrink-0">
+                        <div className="space-y-1.5 md:space-y-1">
+                            <div className="flex items-center gap-2">
+                                <div className="h-0.5 w-5 md:w-6 bg-amber-500" />
+                                <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-amber-500">
+                                    Discussion
+                                </h3>
+                            </div>
+                            <h2 className="text-2xl md:text-4xl font-black tracking-tighter text-stone-900">
+                                PlotLine Community<span className="text-amber-500">.</span>
+                            </h2>
+                        </div>
+                        <button
+                            onClick={() => setIsReplyModalOpen(false)}
+                            className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-stone-100 hover:bg-amber-400 text-stone-900 rounded-full transition-all group active:scale-95 shrink-0"
+                        >
+                            <span className="material-symbols-outlined text-xl md:text-2xl group-hover:rotate-90 transition-transform">
+                                close
+                            </span>
+                        </button>
+                    </div>
+
+                    {/* Comments Feed */}
+                    <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 md:px-16 md:py-12 space-y-6 md:space-y-10 custom-scrollbar bg-stone-50/20">
+                        {comments?.length > 0 ? (
+                            comments.map((c) => (
+                                <motion.div
+                                    key={c._id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex gap-3 md:gap-6 group items-start max-w-4xl"
+                                >
+                                    <img
+                                        src={c.userId?.pfp || defaultPfp}
+                                        className="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl object-cover shrink-0 shadow-md border-2 border-white ring-1 ring-stone-100"
+                                        alt="User"
+                                    />
+
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                                                <p className="text-sm md:text-base font-black text-stone-900">
+                                                    {c.userId?.firstName} {c.userId?.lastName}
+                                                </p>
+                                                <span className="text-[9px] md:text-[10px] font-black text-stone-400 uppercase tracking-wider">
+                                                    {new Date(c.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+
+                                            {user?.user?._id === c.userId?._id && (
+                                                <button className="opacity-100 md:opacity-0 group-hover:md:opacity-100 p-2 -m-1 text-stone-400 hover:text-stone-900 transition-all active:text-stone-900">
+                                                    <span className="material-symbols-outlined text-lg md:text-xl">
+                                                        more_horiz
+                                                    </span>
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        <div className="relative w-full">
+                                            <p className="text-stone-600 text-[14px] md:text-[16px] leading-relaxed font-medium bg-white p-4 md:p-6 rounded-2xl md:rounded-4xl rounded-tl-none border border-stone-100 shadow-sm w-full wrap-break-word">
+                                                {c.comment}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center opacity-20 py-12 md:py-20">
+                                <span className="material-symbols-outlined text-5xl md:text-7xl mb-3 md:mb-4">
+                                    forum
+                                </span>
+                                <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-center">
+                                    Be the first to speak
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="shrink-0 p-4 md:p-10 bg-white border-t border-stone-100">
+                        <div className="max-w-4xl mx-auto flex items-end gap-2 md:gap-6">
+                            {/* Textarea wrapper */}
+                            <div className="flex-1 relative group flex items-center">
+                                <textarea
+                                    ref={commentInputRef}
+                                    rows="1"
+                                    placeholder="Share your thoughts..."
+                                    className="w-full max-h-32 p-3 md:p-6 pr-10 md:pr-14 bg-stone-50 border-2 border-transparent focus:border-amber-400/20 focus:bg-white rounded-xl md:rounded-4xl outline-none transition-all duration-300 text-stone-800 font-medium leading-relaxed resize-none overflow-y-auto shadow-inner text-sm md:text-base"
+                                    onInput={(e) => {
+                                        e.target.style.height = 'auto';
+                                        e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
+                                    }}
+                                />
+                                <div className="absolute right-3 bottom-3 md:right-6 md:bottom-6 text-stone-300">
+                                    <span className="material-symbols-outlined text-lg md:text-xl">
+                                        chat_bubble
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handlePostComment}
+                                className="h-12 md:h-18 px-6 md:px-12 bg-stone-900 hover:bg-amber-400 text-white hover:text-stone-900 rounded-xl md:rounded-4xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] transition-all duration-300 active:scale-95 flex items-center justify-center gap-1 md:gap-3 shrink-0"
+                            >
+                                <span className="hidden sm:inline">Post Reply</span>
+                                <span className="material-symbols-outlined text-base md:text-xl sm:hidden">
+                                    send
+                                </span>
+                            </button>
+                        </div>
+
+                        <div className="h-1 md:hidden" />
+                        <div className="h-safe-bottom md:hidden" />
+                    </div>
                 </div>
-                
-                {/* Edit button - Better touch target on mobile */}
-                {user?.user?._id === c.userId?._id && (
-                  <button className="opacity-100 md:opacity-0 group-hover:md:opacity-100 p-2 -m-1 text-stone-400 hover:text-stone-900 transition-all active:text-stone-900">
-                    <span className="material-symbols-outlined text-lg md:text-xl">
-                      more_horiz
-                    </span>
-                  </button>
-                )}
-              </div>
-              
-              {/* Comment bubble - Full width on mobile */}
-              <div className="relative w-full">
-                <p className="text-stone-600 text-[14px] md:text-[16px] leading-relaxed font-medium bg-white p-4 md:p-6 rounded-2xl md:rounded-4xl rounded-tl-none border border-stone-100 shadow-sm w-full wrap-break-word">
-                  {c.comment}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        ))
-      ) : (
-        <div className="h-full flex flex-col items-center justify-center opacity-20 py-12 md:py-20">
-          <span className="material-symbols-outlined text-5xl md:text-7xl mb-3 md:mb-4">
-            forum
-          </span>
-          <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-center">
-            Be the first to speak
-          </p>
-        </div>
-      )}
-    </div>
-
-    {/* Input Bar: Floating Style - Better mobile keyboard handling */}
-    <div className="shrink-0 p-4 md:p-10 bg-white border-t border-stone-100">
-      <div className="max-w-4xl mx-auto flex items-end gap-2 md:gap-6">
-        {/* Textarea wrapper */}
-        <div className="flex-1 relative group flex items-center">
-          <textarea
-            ref={commentInputRef}
-            rows="1"
-            placeholder="Share your thoughts..."
-            className="w-full max-h-32 p-3 md:p-6 pr-10 md:pr-14 bg-stone-50 border-2 border-transparent focus:border-amber-400/20 focus:bg-white rounded-xl md:rounded-4xl outline-none transition-all duration-300 text-stone-800 font-medium leading-relaxed resize-none overflow-y-auto shadow-inner text-sm md:text-base"
-            onInput={(e) => {
-              e.target.style.height = 'auto';
-              e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
-            }}
-          />
-          {/* Chat icon - Better positioning */}
-          <div className="absolute right-3 bottom-3 md:right-6 md:bottom-6 text-stone-300">
-            <span className="material-symbols-outlined text-lg md:text-xl">
-              chat_bubble
-            </span>
-          </div>
-        </div>
-        
-        {/* Post button - Better touch area on mobile */}
-        <button
-          onClick={handlePostComment}
-          className="h-12 md:h-18 px-6 md:px-12 bg-stone-900 hover:bg-amber-400 text-white hover:text-stone-900 rounded-xl md:rounded-4xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] transition-all duration-300 active:scale-95 flex items-center justify-center gap-1 md:gap-3 shrink-0"
-        >
-          <span className="hidden sm:inline">Post Reply</span>
-          <span className="material-symbols-outlined text-base md:text-xl sm:hidden">
-            send
-          </span>
-        </button>
-      </div>
-      
-      {/* Safe area inset for modern mobile browsers (notch/home indicator) */}
-      <div className="h-1 md:hidden" />
-      <div className="h-safe-bottom md:hidden" />
-    </div>
-  </div>
-</Modal>
+            </Modal>
 
             {/* Modal for Cover Selection */}
             <Modal open={isChangeCoverModalOpen} setOpen={setIsChangeCoverModalOpen}>
@@ -450,8 +441,8 @@ export default function Profile() {
                                         transition={{ delay: index * 0.03 }}
                                         className={`group relative aspect-video rounded-4xl overflow-hidden cursor-pointer transition-all duration-500
                                         ${selectedBackdrop === banner?.backdropPath
-                                            ? "ring-[6px] ring-amber-400 ring-offset-4 shadow-2xl scale-[1.02]"
-                                            : "shadow-lg hover:shadow-2xl hover:shadow-stone-200"}`}
+                                                ? "ring-[6px] ring-amber-400 ring-offset-4 shadow-2xl scale-[1.02]"
+                                                : "shadow-lg hover:shadow-2xl hover:shadow-stone-200"}`}
                                         onClick={() => setSelectedBackdrop(banner?.backdropPath)}
                                     >
                                         <img
