@@ -35,6 +35,7 @@ export default function Profile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
+                setProfileData(null);
                 const res = await getProfile(userId);
                 setProfileData(res);
             } catch (err) {
