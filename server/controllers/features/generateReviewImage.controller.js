@@ -44,7 +44,13 @@ export const shareReviewImage = async (req, res) => {
 
         res.set('Content-Type', 'image/png');
         res.set(`Content-Disposition`, `attachment; filename="${reviewId}.png"`);
-        res.send(imageBuffer);
+        // res.send(imageBuffer);
+
+        return res.status(200).json({
+            success: true,
+            reviewToLink: reviewLink,
+            image: imageBuffer,
+        });
 
     } catch (error) {
         console.error("Share review image error:", error);

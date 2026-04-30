@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useUserStore from "../../store/userStore";
 import { toggleLikeReview } from "../../api/reviews.api";
+import { shareReview } from "../../api/share.api";
+import Modal from "./Modal";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShareNodes, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 export default function ReviewCard({
     userId,
@@ -30,6 +34,10 @@ export default function ReviewCard({
         Array.isArray(reviewLikes) ? reviewLikes.length : (reviewLikes ?? 0)
     );
 
+    const [isReviewShareModalOpen, setIsReviewShareModalOpen] = useState(false);
+    const [reviewImage, setReviewImage] = useState(null);
+    const [reviewUrl, setReviewUrl] = useState(null);
+
     const [loading, setLoading] = useState(false);
 
     const formattedLikes = likes >= 1000 ? (likes / 1000).toFixed(1) + "k" : likes;
@@ -47,13 +55,50 @@ export default function ReviewCard({
             await toggleLikeReview(reviewId);
 
         } catch (err) {
-            // rollback only on failure
             setIsLiked(alreadyLiked);
             setLikes((prev) => (alreadyLiked ? prev + 1 : prev - 1));
         } finally {
             setLoading(false);
         }
     };
+
+    const handleReviewShare = async () => {
+        try {
+            setIsReviewShareModalOpen(true);
+            const res = await shareReview(reviewId);
+            const bufferArray = new Uint8Array(res.data.image.data);
+            const blob = new Blob([bufferArray], { type: "image/png" });
+            const blobUrl = URL.createObjectURL(blob);
+
+            setReviewImage(blobUrl);
+            setReviewUrl(res.data.reviewToLink);
+
+        } catch (error) {
+            console.error("Failed to fetch review image:", error);
+        }
+    };
+
+    const handleShareReviewImage = async () => {
+        try {
+            const response = await fetch(reviewImage);
+            const blob = await response.blob();
+            const file = new File([blob], `${movieTitle}-review.png`, { type: "image/png" });
+
+            const shareText = `Just posted my review for "${movieTitle}" on PlotLine!\n${reviewUrl}`;
+
+            if (navigator.canShare && navigator.canShare({ files: [file], text: shareText })) {
+                await navigator.share({
+                    files: [file],
+                    title: `${movieTitle} Review`,
+                    text: shareText
+                });
+            } else {
+                window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
+            }
+        } catch (err) {
+            console.error("Share failed:", err);
+        }
+    }
 
     return (
         <div className="w-full rounded-2xl overflow-hidden bg-white shadow-[0_4px_40px_rgba(0,0,0,0.13)] font-sans">
@@ -143,10 +188,8 @@ export default function ReviewCard({
 
                 <div className="h-px bg-gray-100 mb-3.5" />
 
-                {/* ACTIONS */}
                 <div className="flex items-center gap-1.5">
-
-                    {/* LIKE BUTTON */}
+                    {/* Like Button */}
                     <button
                         onClick={handleLike}
                         disabled={loading}
@@ -180,22 +223,114 @@ export default function ReviewCard({
                     </button>
 
                     <button
-                    onClick={onReplyClick}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-[13px] font-semibold text-gray-600 cursor-pointer">
+                        onClick={onReplyClick}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-[13px] font-semibold text-gray-600 cursor-pointer">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                         </svg>
                         Reply
                     </button>
 
-                    <button className="ml-auto flex items-center px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-400 cursor-pointer">
+                    <button
+                        onClick={handleReviewShare}
+                        className="ml-auto flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-amber-400 bg-white text-amber-600 text-[13px] font-semibold cursor-pointer">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
                             <polyline points="16 6 12 2 8 6" />
                             <line x1="12" y1="2" x2="12" y2="15" />
                         </svg>
+                        Share
                     </button>
                 </div>
+
+                <Modal open={isReviewShareModalOpen} setOpen={setIsReviewShareModalOpen}>
+                    <div className="relative flex flex-col lg:flex-row h-dvh lg:h-[90vh] w-full lg:w-[95vw] max-w-7xl bg-white overflow-hidden md:rounded-4xl lg:rounded-[2.5rem] shadow-2xl">
+                        
+                        {/* Close Button */}
+                        <button 
+                            onClick={() => setIsReviewShareModalOpen(false)}
+                            className="absolute top-6 right-6 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm text-stone-900 shadow-md hover:bg-stone-100 transition-all active:scale-95"
+                        >
+                            <FontAwesomeIcon icon={faXmark} className="text-xl" />
+                        </button>
+
+                        {/* Image Preview Area */}
+                        <div className="relative flex-[1.4] bg-stone-50 flex items-center justify-center p-6 lg:p-16 border-b lg:border-b-0 lg:border-r border-stone-100 overflow-hidden min-h-75">
+                            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_10%_10%,rgba(251,191,36,0.08)_0%,transparent_50%)]" />
+                            
+                            {reviewImage ? (
+                                <div className="relative z-10 w-full h-full flex items-center justify-center">
+                                    <img
+                                        src={reviewImage}
+                                        alt="Review Share"
+                                        className="max-h-full max-w-full object-contain rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] border-4 lg:border-12 border-white transition-transform duration-700"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="w-12 h-12 border-4 border-stone-200 border-t-amber-400 rounded-full animate-spin" />
+                                    <p className="text-stone-400 text-xs font-black tracking-[0.3em] uppercase">Generating...</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Action Area */}
+                        <div className="flex-[0.8] flex flex-col p-8 lg:p-14 bg-white">
+                            <div className="mb-8 lg:mb-12">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="h-1 w-8 bg-amber-400 rounded-full" />
+                                    <span className="text-[11px] font-black tracking-[0.4em] text-stone-400 uppercase">Studio Export</span>
+                                </div>
+                                <h3 className="text-4xl lg:text-5xl font-black text-stone-900 tracking-tighter leading-tight">
+                                    Share <br className="hidden lg:block" />
+                                    <span className="text-amber-400">Review.</span>
+                                </h3>
+                            </div>
+
+                            <div className="space-y-4 lg:space-y-6 flex-1">
+                                <button
+                                    disabled={!reviewImage}
+                                    onClick={handleShareReviewImage}
+                                    className="w-full group flex items-center justify-center gap-3 px-8 py-5 bg-amber-400 hover:bg-amber-500 text-stone-900 rounded-2xl transition-all duration-300 shadow-lg shadow-amber-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none"
+                                >
+                                    <FontAwesomeIcon icon={faShareNodes} className="text-lg" />
+                                    <span className="font-bold text-lg">Share to Apps</span>
+                                </button>
+
+                                <button
+                                    disabled={!reviewImage}
+                                    onClick={() => {
+                                        if (reviewImage) {
+                                            const link = document.createElement("a");
+                                            link.href = reviewImage;
+                                            link.download = `${movieTitle}_Review.png`;
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        }
+                                    }}
+                                    className="w-full group flex items-center justify-center gap-3 px-8 py-5 bg-stone-900 hover:bg-stone-800 text-white rounded-2xl transition-all duration-300 shadow-xl active:scale-[0.97] disabled:opacity-50"
+                                >
+                                    <span className="font-bold text-lg">Download HD</span>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Footer hint for mobile */}
+                            <div className="mt-8 lg:mt-auto pt-4 flex items-center justify-center lg:justify-between border-t border-stone-50">
+                                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                                    PlotLine
+                                </p>
+                                <div className="hidden lg:flex gap-1">
+                                    <div className="w-8 h-1 rounded-full bg-amber-400" />
+                                    <div className="w-4 h-1 rounded-full bg-stone-100" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </div>
     );
