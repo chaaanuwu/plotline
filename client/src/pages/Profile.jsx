@@ -35,9 +35,9 @@ export default function Profile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
+                setProfileData(null);
                 const res = await getProfile(userId);
                 setProfileData(res);
-                console.log(res);
             } catch (err) {
                 console.error("Failed to fetch profile", err);
             } finally {
@@ -59,6 +59,7 @@ export default function Profile() {
     }
 
     const handleOpenReplyModal = async (review) => {
+        setComments([]);
         setSelectedReview(review);
         setIsReplyModalOpen(true);
         try {
@@ -70,11 +71,16 @@ export default function Profile() {
     }
 
     const handlePostComment = async () => {
-        console.log(commentInputRef.current.value);
+        const content = commentInputRef.current.value;
+        if (!content.trim()) return;
+
         try {
-            const res = await postComment(selectedReview._id, commentInputRef.current.value);
+            const res = await postComment(selectedReview._id, content);
             if (res.data.success) {
-                console.log("Comment posted successfully");
+                // Refresh comments locally
+                setComments(prev => [...prev, res.data.comment]);
+                commentInputRef.current.value = "";
+                commentInputRef.current.style.height = 'auto';
             }
         } catch (error) {
             console.error("Failed to post comment", error);
@@ -179,8 +185,8 @@ export default function Profile() {
                             </h2>
 
                             <div className="flex items-center gap-6 mt-4">
-                                <ProfileStat count={user.followersCount || 0} label="Followers" href="/followers" />
-                                <ProfileStat count={user.followingCount || 0} label="Following" href="/following" />
+                                <ProfileStat count={profileData.followersCount || 0} label="Followers" href="/followers" />
+                                <ProfileStat count={profileData.followingCount || 0} label="Following" href="/following" />
 
                                 <div className="hidden sm:flex items-center gap-2 text-stone-400 border-l border-stone-200 pl-6 ml-2">
                                     <span className="material-symbols-outlined text-[18px]">calendar_month</span>
@@ -215,7 +221,6 @@ export default function Profile() {
                                 </button>
                             )}
 
-                            {/* Dropdown */}
                             <div className="relative">
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -241,7 +246,6 @@ export default function Profile() {
                     </div>
                 </div>
 
-                {/* Director Statement */}
                 <motion.section
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -259,7 +263,6 @@ export default function Profile() {
                     </p>
                 </motion.section>
 
-                {/* Tabs */}
                 <motion.section
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -278,180 +281,206 @@ export default function Profile() {
 
             {/* Comments Modal */}
             <Modal open={isReplyModalOpen} setOpen={setIsReplyModalOpen}>
-                <div className="flex flex-col h-[80vh] max-h-175">
+                <div className="flex flex-col h-dvh md:h-[90vh] md:max-h-212.5 w-full max-w-5xl mx-auto bg-white md:rounded-[3rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.25)] relative">
 
-                    <div className="p-6 border-b border-stone-100 bg-stone-50/50">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-600 mb-1">
-                            Discussion
-                        </h3>
-                        <h2 className="text-2xl font-black tracking-tight text-stone-900 leading-none">
-                            Responses
-                        </h2>
+                    <div className="px-4 py-4 md:px-12 md:py-10 flex items-center justify-between border-b border-stone-100 bg-white/95 backdrop-blur-md z-20 shrink-0">
+                        <div className="space-y-1.5 md:space-y-1">
+                            <div className="flex items-center gap-2">
+                                <div className="h-0.5 w-5 md:w-6 bg-amber-500" />
+                                <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-amber-500">
+                                    Discussion
+                                </h3>
+                            </div>
+                            <h2 className="text-2xl md:text-4xl font-black tracking-tighter text-stone-900">
+                                PlotLine Community<span className="text-amber-500">.</span>
+                            </h2>
+                        </div>
+                        <button
+                            onClick={() => setIsReplyModalOpen(false)}
+                            className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-stone-100 hover:bg-amber-400 text-stone-900 rounded-full transition-all group active:scale-95 shrink-0"
+                        >
+                            <span className="material-symbols-outlined text-xl md:text-2xl group-hover:rotate-90 transition-transform">
+                                close
+                            </span>
+                        </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+                    {/* Comments Feed */}
+                    <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 md:px-16 md:py-12 space-y-6 md:space-y-10 custom-scrollbar bg-stone-50/20">
                         {comments?.length > 0 ? (
                             comments.map((c) => (
-                                <div key={c._id} className="flex gap-4 group">
+                                <motion.div
+                                    key={c._id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex gap-3 md:gap-6 group items-start max-w-4xl"
+                                >
                                     <img
                                         src={c.userId?.pfp || defaultPfp}
-                                        className="w-8 h-8 rounded-full object-cover shrink-0 shadow-sm"
+                                        className="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl object-cover shrink-0 shadow-md border-2 border-white ring-1 ring-stone-100"
+                                        alt="User"
                                     />
-                                    <div className="flex-1">
-                                        <div className="bg-stone-100 rounded-2xl rounded-tl-none px-4 py-3">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-xs font-black text-stone-900">{profileData?.user.firstName} {profileData?.user.lastName}</p>
-                                                <span className="text-[9px] text-stone-400 ml-2">{new Date(c.createdAt).toLocaleString()}</span>
 
-                                                {isMyProfile &&
-                                                    <div className="relative">
-                                                        <button
-                                                            onClick={() => setSelectedComment(selectedComment === c._id ? null : c._id)}
-                                                            className="w-5 h-5 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-95"
-                                                        >
-                                                            <span className="material-symbols-outlined text-2xl">more_horiz</span>
-                                                        </button>
-
-                                                        <Dropdown open={selectedComment === c._id} setOpen={setSelectedComment}>
-                                                            <div className="p-2 min-w-40">
-                                                                <button
-                                                                onClick={() => handleUpdateComment}
-                                                                className="w-full text-left p-2 text-sm font-bold text-stone-600 hover:bg-stone-50 rounded-lg transition-colors uppercase tracking-wider">
-                                                                    Edit Comment
-                                                                </button>
-                                                                <button className="w-full text-left p-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors uppercase tracking-wider">
-                                                                    Delete Comment
-                                                                </button>
-                                                            </div>
-                                                        </Dropdown>
-                                                    </div>
-                                                }
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                                                <p className="text-sm md:text-base font-black text-stone-900">
+                                                    {c.userId?.firstName} {c.userId?.lastName}
+                                                </p>
+                                                <span className="text-[9px] md:text-[10px] font-black text-stone-400 uppercase tracking-wider">
+                                                    {new Date(c.createdAt).toLocaleDateString()}
+                                                </span>
                                             </div>
-                                            <p className="text-sm text-stone-600 mt-1 leading-relaxed">{c.comment}</p>
+
+                                            {user?.user?._id === c.userId?._id && (
+                                                <button className="opacity-100 md:opacity-0 group-hover:md:opacity-100 p-2 -m-1 text-stone-400 hover:text-stone-900 transition-all active:text-stone-900">
+                                                    <span className="material-symbols-outlined text-lg md:text-xl">
+                                                        more_horiz
+                                                    </span>
+                                                </button>
+                                            )}
                                         </div>
-                                        <div className="flex gap-4 mt-2 ml-2">
-                                            <button className="text-[9px] font-black uppercase tracking-widest text-stone-400 hover:text-amber-600 transition-colors">Like</button>
-                                            <button className="text-[9px] font-black uppercase tracking-widest text-stone-400 hover:text-amber-600 transition-colors">Reply</button>
+
+                                        <div className="relative w-full">
+                                            <p className="text-stone-600 text-[14px] md:text-[16px] leading-relaxed font-medium bg-white p-4 md:p-6 rounded-2xl md:rounded-4xl rounded-tl-none border border-stone-100 shadow-sm w-full wrap-break-word">
+                                                {c.comment}
+                                            </p>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))
                         ) : (
-                            <div className="py-10 text-center">
-                                <p className="text-stone-400 font-serif italic text-sm">No thoughts shared yet. Be the first to break the silence.</p>
+                            <div className="h-full flex flex-col items-center justify-center opacity-20 py-12 md:py-20">
+                                <span className="material-symbols-outlined text-5xl md:text-7xl mb-3 md:mb-4">
+                                    forum
+                                </span>
+                                <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-center">
+                                    Be the first to speak
+                                </p>
                             </div>
                         )}
                     </div>
 
-                    <div className="p-4 bg-white border-t border-stone-100 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-                        <div className="relative flex items-center gap-3 bg-stone-100 rounded-2xl p-2 focus-within:bg-white focus-within:ring-2 focus-within:ring-amber-500/20 transition-all">
-                            <img
-                                src={user?.user?.pfp || defaultPfp}
-                                className="w-8 h-8 rounded-full object-cover ml-1 shadow-sm"
-                            />
-                            <textarea
-                                ref={commentInputRef}
-                                placeholder="Add to the conversation..."
-                                className="flex-1 bg-transparent border-none outline-none focus:ring-0 text-sm py-2 resize-none max-h-32 text-stone-800 placeholder-stone-400 font-medium"
-                                rows={1}
-                                onInput={(e) => {
-                                    e.target.style.height = 'auto';
-                                    e.target.style.height = e.target.scrollHeight + 'px';
-                                }}
-                            />
+                    <div className="shrink-0 p-4 md:p-10 bg-white border-t border-stone-100">
+                        <div className="max-w-4xl mx-auto flex items-end gap-2 md:gap-6">
+                            {/* Textarea wrapper */}
+                            <div className="flex-1 relative group flex items-center">
+                                <textarea
+                                    ref={commentInputRef}
+                                    rows="1"
+                                    placeholder="Share your thoughts..."
+                                    className="w-full max-h-32 p-3 md:p-6 pr-10 md:pr-14 bg-stone-50 border-2 border-transparent focus:border-amber-400/20 focus:bg-white rounded-xl md:rounded-4xl outline-none transition-all duration-300 text-stone-800 font-medium leading-relaxed resize-none overflow-y-auto shadow-inner text-sm md:text-base"
+                                    onInput={(e) => {
+                                        e.target.style.height = 'auto';
+                                        e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
+                                    }}
+                                />
+                                <div className="absolute right-3 bottom-3 md:right-6 md:bottom-6 text-stone-300">
+                                    <span className="material-symbols-outlined text-lg md:text-xl">
+                                        chat_bubble
+                                    </span>
+                                </div>
+                            </div>
+
                             <button
                                 onClick={handlePostComment}
-                                className="px-4 py-2 bg-stone-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 active:scale-95 transition-all shadow-lg"
+                                className="h-12 md:h-18 px-6 md:px-12 bg-stone-900 hover:bg-amber-400 text-white hover:text-stone-900 rounded-xl md:rounded-4xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] transition-all duration-300 active:scale-95 flex items-center justify-center gap-1 md:gap-3 shrink-0"
                             >
-                                Post
+                                <span className="hidden sm:inline">Post Reply</span>
+                                <span className="material-symbols-outlined text-base md:text-xl sm:hidden">
+                                    send
+                                </span>
                             </button>
                         </div>
+
+                        <div className="h-1 md:hidden" />
+                        <div className="h-safe-bottom md:hidden" />
                     </div>
                 </div>
             </Modal>
 
             {/* Modal for Cover Selection */}
             <Modal open={isChangeCoverModalOpen} setOpen={setIsChangeCoverModalOpen}>
-                <div className="flex flex-col h-[90vh] max-h-225">
-                    {/* Header */}
-                    <div className="p-6 md:p-10 border-b border-stone-100 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                            <div>
-                                <h3 className="text-3xl font-black text-stone-900 tracking-tighter">
-                                    Change Cover
+                <div className="relative flex flex-col h-[90vh] max-h-212.5 bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-white">
+                    <button
+                        onClick={() => setIsChangeCoverModalOpen(false)}
+                        className="absolute top-8 right-8 z-30 p-3 bg-stone-900/5 hover:bg-amber-400 text-stone-900 rounded-full transition-all duration-300 group"
+                    >
+                        <svg className="w-6 h-6 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <div className="p-8 md:p-12 border-b border-stone-100 bg-white/90 backdrop-blur-xl sticky top-0 z-20">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pr-16">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1 w-6 bg-amber-400 rounded-full" />
+                                    <span className="text-[10px] font-black tracking-[0.4em] text-stone-400 uppercase">Gallery</span>
+                                </div>
+                                <h3 className="text-4xl font-black text-stone-900 tracking-tighter">
+                                    Change <span className="text-stone-400 font-light italic">Cover</span>
                                 </h3>
-                                <p className="text-stone-500 mt-1 font-medium">
-                                    Browse and select a high-definition cinematic backdrop.
-                                </p>
                             </div>
-                            <div className="w-full lg:w-96">
-                                <SearchBar placeholder="Search for a movie title..." />
+                            <div className="w-full lg:w-112.5">
+                                <SearchBar
+                                    placeholder="Search for a movie title..."
+                                    className="rounded-2xl border-stone-100 focus:ring-amber-400 shadow-sm"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar bg-stone-50/30">
+                    <div className="flex-1 overflow-y-auto p-8 md:p-12 custom-scrollbar bg-stone-50/50">
                         {banners.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 {banners.map((banner, index) => (
                                     <motion.div
                                         key={index}
-                                        initial={{ opacity: 0, y: 20 }}
+                                        initial={{ opacity: 0, y: 30 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: index * 0.05 }}
-                                        whileHover={{ scale: 1.02 }}
-                                        className={`group relative aspect-video rounded-4xl overflow-hidden cursor-pointer bg-stone-200 border-4
-                                            ${selectedBackdrop === banner?.backdropPath ? "border-amber-500/70" : "border-white"}
-                                            shadow-xl transition-all hover:shadow-amber-500/20 hover:border-amber-500/40`}
-                                        onClick={() => {
-                                            setSelectedBackdrop(banner?.backdropPath);
-                                        }}
+                                        transition={{ delay: index * 0.03 }}
+                                        className={`group relative aspect-video rounded-4xl overflow-hidden cursor-pointer transition-all duration-500
+                                        ${selectedBackdrop === banner?.backdropPath
+                                                ? "ring-[6px] ring-amber-400 ring-offset-4 shadow-2xl scale-[1.02]"
+                                                : "shadow-lg hover:shadow-2xl hover:shadow-stone-200"}`}
+                                        onClick={() => setSelectedBackdrop(banner?.backdropPath)}
                                     >
                                         <img
                                             src={`${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${banner?.backdropPath}`}
                                             alt={banner?.title}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                                         />
-                                        <div className="absolute inset-0 bg-linear-to-t from-stone-900 via-stone-900/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
-                                        <div className="absolute inset-0 flex flex-col justify-end p-8 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                            <div className="flex items-center justify-between">
-                                                <div className="max-w-[80%]">
-                                                    <p className="text-white text-xl font-bold leading-tight drop-shadow-md">
-                                                        {banner?.title || "Untitled Cinematic"}
-                                                    </p>
-                                                    <p className="text-amber-400 text-xs font-black uppercase tracking-[0.2em] mt-2 opacity-0 group-hover:opacity-100 transition-opacity delay-100">
-                                                        Click to Apply
-                                                    </p>
-                                                </div>
-                                            </div>
+                                        <div className="absolute inset-0 bg-linear-to-t from-stone-950 via-stone-950/40 to-transparent opacity-80" />
+                                        <div className="absolute inset-0 flex flex-col justify-end p-8">
+                                            <p className="text-white text-2xl font-black tracking-tight drop-shadow-xl translate-y-2 group-hover:translate-y-0 transition-transform">
+                                                {banner?.title || "Untitled Cinematic"}
+                                            </p>
                                         </div>
                                     </motion.div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-full py-20">
-                                <div className="size-20 bg-stone-100 rounded-3xl flex items-center justify-center text-4xl mb-6 shadow-inner">
-                                    🔍
-                                </div>
-                                <h4 className="text-xl font-bold text-stone-900">No results found</h4>
-                                <p className="text-stone-500 mt-2">Try searching for a different cinematic masterpiece.</p>
+                            <div className="flex flex-col items-center justify-center py-32">
+                                <span className="text-6xl mb-4 opacity-20">🎞️</span>
+                                <h4 className="text-xl font-bold text-stone-400 uppercase tracking-widest">No scenes found</h4>
                             </div>
                         )}
                     </div>
 
                     {selectedBackdrop && (
-                        <div className="p-6 border-t border-stone-100 bg-white/80 backdrop-blur-md sticky bottom-0 flex justify-end gap-4">
+                        <div className="p-8 border-t border-stone-100 bg-white/90 backdrop-blur-md sticky bottom-0 z-20 flex items-center justify-end gap-4">
                             <button
                                 onClick={() => setIsChangeCoverModalOpen(false)}
-                                className="px-6 py-3 bg-stone-200 rounded-xl font-bold hover:bg-stone-300 transition-all"
+                                className="px-8 py-4 text-stone-400 font-bold hover:text-stone-900 transition-colors"
                             >
-                                Cancel
+                                Discard
                             </button>
                             <button
                                 onClick={handleSaveCover}
-                                className="px-6 py-3 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-all"
+                                className="px-10 py-4 bg-amber-400 hover:bg-stone-900 hover:text-white text-stone-900 rounded-2xl font-black transition-all shadow-xl shadow-amber-100 active:scale-95"
                             >
-                                Save Cover
+                                Apply Cinematic Cover
                             </button>
                         </div>
                     )}
@@ -463,7 +492,7 @@ export default function Profile() {
 
 function ProfileStat({ count, label, href }) {
     return (
-        <a href={href} className="group flex flex-col items-start gap-1">
+        <a href={href} className="group flex flex-col items-center gap-1">
             <span className="text-xl font-black text-stone-900 group-hover:text-amber-600 transition-colors leading-none">
                 {count}
             </span>

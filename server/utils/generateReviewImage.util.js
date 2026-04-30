@@ -67,7 +67,8 @@ export default async function generateReviewImage(data) {
             reviewDate = "Today",
             likeCount = "0",
             commentCount = "0",
-            linkToReview="#"
+            linkToReview="#",
+            qrCodeToReview
         } = data;
 
         const width = 1920;
@@ -227,6 +228,13 @@ export default async function generateReviewImage(data) {
         ctx.font = '18px "Arial", sans-serif';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         ctx.fillText(`🔗 ${linkToReview}`, paddingLeft, height - 80);
+
+        // --- 9. QR Code (Placed at the Bottom Right) ---
+        if (qrCodeToReview) {
+            const qrImg = await loadImage(qrCodeToReview);
+            const qrSize = 125;
+            ctx.drawImage(qrImg, width - paddingLeft - qrSize, height - 80 - qrSize, qrSize, qrSize);
+        }
 
         return canvas.toBuffer('image/png');
 

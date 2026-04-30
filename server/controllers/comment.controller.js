@@ -53,13 +53,6 @@ export const getAllComments = async (req, res) => {
             .populate('userId', 'firstName lastName pfp')
             .sort({ createdAt: -1 });
 
-        if (comments.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: "No comments found"
-            });
-        }
-
         res.status(200).json({
             success: true,
             comments
