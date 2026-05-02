@@ -11,6 +11,4 @@ userRouter.put('/me', authorize, editProfile);
 
 userRouter.get('/search', authorize, searchUsers);
 
-userRouter.get('/:userId', authorize, getUser);
-
 export default userRouter;

@@ -4,3 +4,8 @@ export const followUser = async (followingId) => {
     const res = await axiosInstance.post('/me/follow', { followingId });
     return res;
 }
+
+export const unfollowUser = async (followingId) => {
+    const res = await axiosInstance.post('/me/unfollow', { followingId });
+    return res;
+}

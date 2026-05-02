@@ -12,6 +12,16 @@ export const getUserMeData = async (userId) => {
     }
 };
 
+export const getUserData = async (userId) => {
+    try {
+        const user = await User.findById(userId).select("-password");
+        return user;
+    } catch (error) {
+        console.error("getUserData error:", error);
+        throw new Error("Database error while fetching user");
+    }
+}
+
 export const getUserMe = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -68,7 +78,7 @@ export const editProfile = async (req, res) => {
 export const getUser = async (req, res) => {
     try {
         const userId = req.params.userId;
-        const user = await User.findById(userId).select('-password');
+        const user = await getUserData(userId);
 
         if (!user) {
             return res.status(404).json({ success: false, error: "User not found" });
