@@ -12,7 +12,7 @@ import Modal from "../components/ui/Modal";
 import SearchBar from "../components/ui/SearchBar";
 import { getHistoryBanner } from "../api/history.api";
 import Dropdown from "../components/ui/Dropdown";
-import { followUser } from "../api/userFollows.api";
+import { followUser, unfollowUser } from "../api/userFollows.api";
 import { getAllComments, postComment, updateComment } from "../api/commments.api";
 
 export default function Profile() {
@@ -35,7 +35,7 @@ export default function Profile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                setProfileData(null);
+                setLoading(true);
                 const res = await getProfile(userId);
                 setProfileData(res);
             } catch (err) {
@@ -47,16 +47,58 @@ export default function Profile() {
         fetchProfile();
     }, [userId]);
 
-    const handleFollow = async () => {
+    // Check following status
+    useEffect(() => {
+        if (user?.user?._id && profileData?.followers) {
+            const loggedInUserId = user.user._id;
+
+            const isFollowing = profileData.followers.some((record) => {
+                const followerId = record.followerId?._id || record.followerId || record._id;
+                return followerId === loggedInUserId;
+            });
+
+            setFollowing(isFollowing);
+        }
+    }, [profileData, user]);
+
+    const handleFollowToggle = async () => {
+        // 1. Store the previous state in case the API fails (to rollback)
+        const wasFollowing = following;
+        const profileId = profileData.user._id;
+
         try {
-            const res = await followUser(profileData.user._id);
-            if (res.status === 200) {
-                setFollowing(true);
+            if (wasFollowing) {
+                // UNFOLLOW LOGIC
+                const res = await unfollowUser(profileId);
+                if (res.status === 200) {
+                    setFollowing(false);
+                    setProfileData(prev => ({
+                        ...prev,
+                        followersCount: Math.max(0, (prev.followersCount || 0) - 1),
+                        // Remove current user from the local followers array
+                        followers: prev.followers.filter(f =>
+                            (f.followerId?._id || f.followerId || f._id) !== user.user._id
+                        )
+                    }));
+                }
+            } else {
+                // FOLLOW LOGIC
+                const res = await followUser(profileId);
+                if (res.status === 200) {
+                    setFollowing(true);
+                    setProfileData(prev => ({
+                        ...prev,
+                        followersCount: (prev.followersCount || 0) + 1,
+                        // Add current user to local followers array to keep useEffect happy
+                        followers: [...prev.followers, { followerId: user.user._id }]
+                    }));
+                }
             }
         } catch (error) {
-            console.error("Failed to follow user", error);
+            console.error("Toggle follow failed", error);
+            // Optional: Alert the user or rollback UI state
         }
-    }
+    };
 
     const handleOpenReplyModal = async (review) => {
         setComments([]);
@@ -77,7 +119,6 @@ export default function Profile() {
         try {
             const res = await postComment(selectedReview._id, content);
             if (res.data.success) {
-                // Refresh comments locally
                 setComments(prev => [...prev, res.data.comment]);
                 commentInputRef.current.value = "";
                 commentInputRef.current.style.height = 'auto';
@@ -134,7 +175,6 @@ export default function Profile() {
 
     return (
         <main className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-amber-100">
-            {/* Cover Section */}
             <div className="relative h-64 md:h-96 w-full bg-stone-200 overflow-hidden">
                 <motion.img
                     initial={{ scale: 1.1, opacity: 0 }}
@@ -156,7 +196,6 @@ export default function Profile() {
                 )}
             </div>
 
-            {/* Profile Info */}
             <div className="max-w-5xl mx-auto px-6 lg:px-8">
                 <div className="relative -mt-20 md:-mt-28 flex flex-col md:flex-row md:items-end gap-6 md:gap-10">
                     <motion.div
@@ -206,17 +245,23 @@ export default function Profile() {
                             {!isMyProfile ? (
                                 !following ? (
                                     <button
-                                        onClick={handleFollow}
+                                        onClick={handleFollowToggle}
                                         className="px-10 py-4 bg-stone-900 text-white rounded-2xl font-bold text-sm hover:bg-stone-800 transition-all shadow-lg active:scale-95">
                                         Follow
                                     </button>
                                 ) : (
-                                    <button className="px-10 py-4 bg-white border border-stone-200 text-stone-600 rounded-2xl font-bold text-sm hover:bg-stone-50 transition-all shadow-sm active:scale-95">
+                                    <button
+                                        onClick={handleFollowToggle}
+                                        className="px-10 py-4 bg-white border border-stone-200 text-stone-700 rounded-2xl font-bold text-sm hover:bg-stone-50 transition-all shadow-sm active:scale-95">
                                         Unfollow
                                     </button>
                                 )
                             ) : (
-                                <button className="px-10 py-4 bg-white border border-stone-200 text-stone-600 rounded-2xl font-bold text-sm hover:bg-stone-50 transition-all shadow-sm active:scale-95">
+                                <button
+                                    onClick={() => {
+                                        navigation.navigate('/edit-profile')
+                                    }}
+                                    className="px-10 py-4 bg-white border border-stone-200 text-stone-600 rounded-2xl font-bold text-sm hover:bg-stone-50 transition-all shadow-sm active:scale-95">
                                     Edit Profile
                                 </button>
                             )}
@@ -279,10 +324,9 @@ export default function Profile() {
                 </motion.section>
             </div>
 
-            {/* Comments Modal */}
+            {/* Discussion Modal */}
             <Modal open={isReplyModalOpen} setOpen={setIsReplyModalOpen}>
                 <div className="flex flex-col h-dvh md:h-[90vh] md:max-h-212.5 w-full max-w-5xl mx-auto bg-white md:rounded-[3rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.25)] relative">
-
                     <div className="px-4 py-4 md:px-12 md:py-10 flex items-center justify-between border-b border-stone-100 bg-white/95 backdrop-blur-md z-20 shrink-0">
                         <div className="space-y-1.5 md:space-y-1">
                             <div className="flex items-center gap-2">
@@ -299,13 +343,10 @@ export default function Profile() {
                             onClick={() => setIsReplyModalOpen(false)}
                             className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-stone-100 hover:bg-amber-400 text-stone-900 rounded-full transition-all group active:scale-95 shrink-0"
                         >
-                            <span className="material-symbols-outlined text-xl md:text-2xl group-hover:rotate-90 transition-transform">
-                                close
-                            </span>
+                            <span className="material-symbols-outlined text-xl md:text-2xl group-hover:rotate-90 transition-transform">close</span>
                         </button>
                     </div>
 
-                    {/* Comments Feed */}
                     <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 md:px-16 md:py-12 space-y-6 md:space-y-10 custom-scrollbar bg-stone-50/20">
                         {comments?.length > 0 ? (
                             comments.map((c) => (
@@ -320,7 +361,6 @@ export default function Profile() {
                                         className="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl object-cover shrink-0 shadow-md border-2 border-white ring-1 ring-stone-100"
                                         alt="User"
                                     />
-
                                     <div className="flex-1 min-w-0">
                                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                                             <div className="flex flex-wrap items-center gap-2 md:gap-3">
@@ -331,39 +371,28 @@ export default function Profile() {
                                                     {new Date(c.createdAt).toLocaleDateString()}
                                                 </span>
                                             </div>
-
                                             {user?.user?._id === c.userId?._id && (
                                                 <button className="opacity-100 md:opacity-0 group-hover:md:opacity-100 p-2 -m-1 text-stone-400 hover:text-stone-900 transition-all active:text-stone-900">
-                                                    <span className="material-symbols-outlined text-lg md:text-xl">
-                                                        more_horiz
-                                                    </span>
+                                                    <span className="material-symbols-outlined text-lg md:text-xl">more_horiz</span>
                                                 </button>
                                             )}
                                         </div>
-
-                                        <div className="relative w-full">
-                                            <p className="text-stone-600 text-[14px] md:text-[16px] leading-relaxed font-medium bg-white p-4 md:p-6 rounded-2xl md:rounded-4xl rounded-tl-none border border-stone-100 shadow-sm w-full wrap-break-word">
-                                                {c.comment}
-                                            </p>
-                                        </div>
+                                        <p className="text-stone-600 text-[14px] md:text-[16px] leading-relaxed font-medium bg-white p-4 md:p-6 rounded-2xl md:rounded-4xl rounded-tl-none border border-stone-100 shadow-sm w-full wrap-break-word">
+                                            {c.comment}
+                                        </p>
                                     </div>
                                 </motion.div>
                             ))
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center opacity-20 py-12 md:py-20">
-                                <span className="material-symbols-outlined text-5xl md:text-7xl mb-3 md:mb-4">
-                                    forum
-                                </span>
-                                <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-center">
-                                    Be the first to speak
-                                </p>
+                                <span className="material-symbols-outlined text-5xl md:text-7xl mb-3 md:mb-4">forum</span>
+                                <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-center">Be the first to speak</p>
                             </div>
                         )}
                     </div>
 
                     <div className="shrink-0 p-4 md:p-10 bg-white border-t border-stone-100">
                         <div className="max-w-4xl mx-auto flex items-end gap-2 md:gap-6">
-                            {/* Textarea wrapper */}
                             <div className="flex-1 relative group flex items-center">
                                 <textarea
                                     ref={commentInputRef}
@@ -376,25 +405,17 @@ export default function Profile() {
                                     }}
                                 />
                                 <div className="absolute right-3 bottom-3 md:right-6 md:bottom-6 text-stone-300">
-                                    <span className="material-symbols-outlined text-lg md:text-xl">
-                                        chat_bubble
-                                    </span>
+                                    <span className="material-symbols-outlined text-lg md:text-xl">chat_bubble</span>
                                 </div>
                             </div>
-
                             <button
                                 onClick={handlePostComment}
                                 className="h-12 md:h-18 px-6 md:px-12 bg-stone-900 hover:bg-amber-400 text-white hover:text-stone-900 rounded-xl md:rounded-4xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.15em] md:tracking-[0.2em] transition-all duration-300 active:scale-95 flex items-center justify-center gap-1 md:gap-3 shrink-0"
                             >
                                 <span className="hidden sm:inline">Post Reply</span>
-                                <span className="material-symbols-outlined text-base md:text-xl sm:hidden">
-                                    send
-                                </span>
+                                <span className="material-symbols-outlined text-base md:text-xl sm:hidden">send</span>
                             </button>
                         </div>
-
-                        <div className="h-1 md:hidden" />
-                        <div className="h-safe-bottom md:hidden" />
                     </div>
                 </div>
             </Modal>

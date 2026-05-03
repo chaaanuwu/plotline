@@ -15,7 +15,7 @@ import { ClockIcon } from "lucide-react";
 export default function Navbar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { user, logout } = useUserStore();
+  const { user, setUser, logout } = useUserStore();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -87,14 +87,12 @@ export default function Navbar() {
             <NavLink to="/movies" active={isActive('/movies')} icon={<TicketIcon className="size-4 text-amber-600" />} label="Movies" />
           </div>
 
-          {/* SEARCH BAR + DROPDOWN */}
           <div ref={searchWrapperRef} className="relative w-full max-w-md mx-auto">
             <SearchBar
               onSearch={handleSearch}
               onFocus={() => setIsDropdownOpen(true)}
             />
 
-            {/* We move the dropdown styles here or into the component */}
             <Dropdown open={isDropdownOpen}>
               <div className="w-full min-w-75 md:min-w-112.5 p-2 bg-white/90 backdrop-blur-xl">
                 <div className="px-3 py-2 border-b border-stone-100 mb-2">

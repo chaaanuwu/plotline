@@ -7,8 +7,17 @@ export const getProfile = async (userId) => {
 };
 
 export const setProfileCover = async (backdrop) => {
-    const res = await axiosInstance.put('/user/me', {
+    const res = await axiosInstance.put('/user/me/edit', {
         cover: backdrop
+    });
+
+    return res.data;
+}
+
+export const editProfileData = async (pfp, about) => {
+    const res = await axiosInstance.put('/user/me/edit', {
+        pfp,
+        about
     });
 
     return res.data;
