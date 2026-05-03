@@ -257,7 +257,11 @@ export default function Profile() {
                                     </button>
                                 )
                             ) : (
-                                <button className="px-10 py-4 bg-white border border-stone-200 text-stone-600 rounded-2xl font-bold text-sm hover:bg-stone-50 transition-all shadow-sm active:scale-95">
+                                <button
+                                    onClick={() => {
+                                        navigation.navigate('/edit-profile')
+                                    }}
+                                    className="px-10 py-4 bg-white border border-stone-200 text-stone-600 rounded-2xl font-bold text-sm hover:bg-stone-50 transition-all shadow-sm active:scale-95">
                                     Edit Profile
                                 </button>
                             )}
