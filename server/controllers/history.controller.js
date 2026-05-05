@@ -219,50 +219,6 @@ export const removeWatchedMovie = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// /**
-//  * Remove a watched movie
-//  */
-// export const removeWatchedMovie = async (req, res) => {
-//   try {
-//     const { movieId } = req.params;
-//     const userId = req.user.userId;
-
-//     const movie = await History.findOneAndDelete({ movieId, userId });
-//     if (!movie) {
-//       return res.status(404).json({ success: false, message: 'Movie not found in watched list' });
-//     }
-
-//     res.status(200).json({ success: true, message: `${movie.title} removed from watched list`, data: movie });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false, error: 'Server error' });
-//   }
-// };
-
 /**
  * Get another user's watched movies (public)
  */

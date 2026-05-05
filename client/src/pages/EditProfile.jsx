@@ -18,23 +18,31 @@ export default function EditProfile() {
         e.preventDefault();
         setLoading(true);
         try {
-            const formData = new FormData();
-            formData.append("file", selectedPfpFile);
-            formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_PRESET);
-            formData.append("folder", import.meta.env.VITE_CLOUDINARY_ASSET_FOLDER);
+            setLoading(true);
+            let imageUrl = user.user.pfp;
 
-            const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD;
+            if (selectedPfpFile) {
+                const formData = new FormData();
+                formData.append("file", selectedPfpFile);
+                formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_PRESET);
+                formData.append("folder", import.meta.env.VITE_CLOUDINARY_ASSET_FOLDER);
 
-            const cloudinaryRes = await axios.post(
-                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-                formData
-            );
+                const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD;
 
-            const res = await editProfileData(cloudinaryRes.data.secure_url, about);
+                const cloudinaryRes = await axios.post(
+                    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+                    formData
+                );
+
+                imageUrl = cloudinaryRes.data.secure_url;
+            }
+
+            const res = await editProfileData(imageUrl, about);
+
             if (res.success) {
                 setUser({ ...user, user: res.user });
+                setLoading(false);
             }
-            setLoading(false);
         } catch (err) {
             console.error(err);
             setLoading(false);
@@ -44,7 +52,7 @@ export default function EditProfile() {
     return (
         <main className="min-h-screen bg-stone-50 py-12 px-6 pt-36">
             <div className="max-w-3xl mx-auto">
-                {/* Header */}
+
                 <header className="mb-12">
                     <div className="flex items-center gap-2 mb-2">
                         <div className="h-1 w-6 bg-amber-500 rounded-full" />
@@ -100,7 +108,7 @@ export default function EditProfile() {
                         </div>
                     </section>
 
-                    {/* Bio / About Section */}
+                    {/* Bio Section */}
                     <section className="bg-white p-8 rounded-[2.5rem] border border-stone-200 shadow-sm">
                         <h3 className="text-xs font-black uppercase tracking-widest text-stone-500 mb-6">Director's Statement</h3>
                         <div className="relative">
@@ -117,7 +125,6 @@ export default function EditProfile() {
                         </div>
                     </section>
 
-                    {/* Actions */}
                     <div className="flex items-center justify-end gap-4 pt-4">
                         <button
                             type="button"
