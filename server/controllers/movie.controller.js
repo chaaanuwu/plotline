@@ -1,4 +1,6 @@
+import axios from "axios";
 import Movie from "../models/movie.model.js";
+import { TMDB_BASE_URL, TMDB_KEY } from "../config/env.js";
 
 export const getMovieById = async (req, res) => {
     const movieId = req.params.id;
@@ -17,3 +19,26 @@ export const getMovieById = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch movie" });
     }
 };
+
+export const searchMovie = async (req, res) => {
+    try {
+        const query = req.query.q;
+
+        if (!query || query.trim() === "") {
+            return res.status(400).json({ success: false, error: "Query parameter 'q' is required" });
+        }
+
+        const movies = await axios.get(`${TMDB_BASE_URL}/search/movie`, {
+            params: {
+                api_key: TMDB_KEY,
+                query: query
+            }
+        });
+
+        res.status(200).json({ success: true, movies: movies.data.results });
+
+    } catch (error) {
+        console.error("Error searching movie: ", error);
+        res.status(500).json({ message: "Failed to search movie" });
+    }
+}

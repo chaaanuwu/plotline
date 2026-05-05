@@ -6,7 +6,7 @@ import { MagnifyingGlassIcon, UserGroupIcon, FilmIcon } from "@heroicons/react/2
 import MovieCard from "../components/ui/MovieCard";
 import { searchUsers } from "../api/user.api";
 import Loader from "../components/ui/Loader";
-// import { searchMovies } from "../api/movie.api"; 
+import { searchMovies } from "../api/movie.api";
 
 export default function SearchResultPage() {
     const [movies, setMovies] = useState([]);
@@ -19,33 +19,53 @@ export default function SearchResultPage() {
 
     useEffect(() => {
         const fetchResults = async () => {
-            if (!searchQuery) return;
-            setLoading(true);
-            try {
-                const [usersRes] = await Promise.all([
-                    searchUsers(searchQuery),
-                    // searchMovies(searchQuery),
-                ]);
+    if (!searchQuery) {
+        setLoading(false);
+        return;
+    }
 
-                setUsers(usersRes.users || []);
-                setMovies([]);
-            } catch (error) {
-                console.error("Search error:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    setLoading(true);
+
+    try {
+        const results = await Promise.allSettled([
+            searchUsers(searchQuery),
+            searchMovies(searchQuery),
+        ]);
+
+        const usersRes = results[0];
+        const movieRes = results[1];
+
+        if (usersRes.status === "fulfilled") {
+            setUsers(usersRes.value.users || []);
+        } else {
+            console.error("Users failed:", usersRes.reason);
+            setUsers([]);
+        }
+
+        if (movieRes.status === "fulfilled") {
+            setMovies(movieRes.value?.data.movies || []);
+        } else {
+            console.error("Movies failed:", movieRes.reason);
+            setMovies([]);
+        }
+
+    } catch (error) {
+        console.error("Search error:", error);
+    } finally {
+        setLoading(false);
+    }
+};
         fetchResults();
     }, [searchQuery]);
 
     if (loading) return <Loader
     //  text={`Searching the archives for "${searchQuery}"`}
-      />;
+    />;
 
     return (
         <div className="min-h-screen bg-stone-50 pt-28 pb-20">
             <div className="max-w-7xl mx-auto px-6 md:px-12">
-                
+
                 {/* 1. SEARCH HEADER */}
                 <header className="mb-12">
                     <div className="flex items-center gap-3 mb-4">
@@ -62,11 +82,10 @@ export default function SearchResultPage() {
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                    activeTab === tab 
-                                    ? "bg-stone-900 text-white shadow-lg" 
-                                    : "bg-white border border-stone-200 text-stone-400 hover:text-stone-900"
-                                }`}
+                                className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab
+                                        ? "bg-stone-900 text-white shadow-lg"
+                                        : "bg-white border border-stone-200 text-stone-400 hover:text-stone-900"
+                                    }`}
                             >
                                 {tab}
                             </button>
@@ -82,7 +101,7 @@ export default function SearchResultPage() {
                             {movies.length > 0 ? (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
                                     {movies.map((m) => (
-                                        <MovieCard key={m.id} title={m.title} poster={m.posterPath} rating={m.voteAverage} releaseDate={m.releaseDate} />
+                                        <MovieCard key={m.id} title={m.title} poster={m.poster_path} rating={m.voteAverage} releaseDate={m.release_date} />
                                     ))}
                                 </div>
                             ) : (
@@ -130,13 +149,13 @@ function SectionHeader({ title, count, icon }) {
 function UserResultCard({ user }) {
     return (
         <Link to={`/user/${user._id}`}>
-            <motion.div 
+            <motion.div
                 whileHover={{ y: -4 }}
                 className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-all group"
             >
-                <img 
-                    src={user.pfp} 
-                    className="w-14 h-14 rounded-xl object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                <img
+                    src={user.pfp}
+                    className="w-14 h-14 rounded-xl object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                     alt={user.firstName}
                 />
                 <div className="flex-1">

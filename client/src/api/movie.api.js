@@ -9,3 +9,13 @@ export const getMovieById = async (id) => {
         throw error;
     }
 }
+
+export const searchMovies = async (title) => {
+    try {
+        const response = await axiosInstance.get(`/movies/search?q=${title}`);
+        return response;
+    } catch (error) {
+        console.error("Error searching movie: ", error);
+        throw error;
+    }
+}

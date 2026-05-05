@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 
+import popcornCup from "../../assets/popcorn-cup.png"
+
 export default function MovieCard({
     id,
     title,
@@ -19,7 +21,7 @@ export default function MovieCard({
                 {/* Poster Container */}
                 <div className="relative aspect-2/3 overflow-hidden rounded-4xl bg-stone-200 shadow-md group-hover:shadow-2xl transition-all duration-500 border border-stone-100">
                     <img
-                        src={`${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${poster}`}
+                        src={poster ? `${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${poster}` : popcornCup}
                         alt={`${title} Poster`}
                         className="w-full h-full object-cover transition-transform duration-700"
                         draggable="false"
@@ -46,7 +48,7 @@ export default function MovieCard({
                         {title}
                     </h2>
                     <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mt-1">
-                        {releaseYear}
+                        {releaseYear?.toString()}
                     </p>
                 </div>
             </a>
