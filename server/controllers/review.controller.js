@@ -9,9 +9,9 @@ export const getAllUserReviews = async (req, res) => {
             .populate('movieId', '_id title posterPath backdropPath releaseDate genreNames');
 
         if (!reviews || reviews.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: "No reviews found"
+            return res.status(200).json({
+                success: true,
+                reviews: []
             });
         }
 
@@ -38,9 +38,9 @@ export const getFilmReview = async (req, res) => {
             .populate('movieId', 'title posterPath releaseDate rating');
 
         if (!review) {
-            res.status(404).json({
-                success: false,
-                error: "Review not found"
+            res.status(200).json({
+                success: true,
+                review: null
             });
         }
 
@@ -76,7 +76,7 @@ export const addFilmReview = async (req, res) => {
         const existingReview = await Review.findOne({ userId, movieId });
 
         if (existingReview) {
-            res.status(409).json({
+            return res.status(409).json({
                 success: false,
                 error: "You already reviewed this movie"
             });
@@ -146,9 +146,9 @@ export const deleteFilmReview = async (req, res) => {
         const deletedReview = await Review.findOneAndDelete({ userId, movieId });
 
         if (!deletedReview) {
-            return res.status(404).json({
-                success: false,
-                error: "Review not found"
+            return res.status(200).json({
+                success: true,
+                review: null
             });
         }
 

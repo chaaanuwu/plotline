@@ -154,7 +154,7 @@ export const updateWatchedMovie = async (req, res) => {
     const updatedMovie = await History.findOneAndUpdate(
       { _id: movieId, userId },
       { $set: { rating } },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     ).populate("movieId", "movieId title posterPath releaseDate");
 
     if (!updatedMovie) {

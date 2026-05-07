@@ -22,6 +22,11 @@ export const addWatchedMovie = async (title) => {
     return res;
 }
 
+export const updateRating = async (movieId, rating) => {
+    const res = await axiosInstance.put(`/history/movie/${movieId}`, {rating});
+    return res;
+}
+ 
 export const removeMovieFromHistory = async (movieId) => {
     const res = await axiosInstance.delete(`/history/movie/${movieId}`);
     return res;
