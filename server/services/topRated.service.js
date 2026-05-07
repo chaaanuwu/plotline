@@ -17,8 +17,6 @@ export const fetchAndStoreTopRated = async () => {
 
         const movieFromTMDB = res.data.results;
 
-        // console.log(moviesFromTMDB);
-
         const movieDocs = [];
 
         for (const movie of movieFromTMDB) {

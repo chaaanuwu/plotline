@@ -1,20 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getMovieById } from "../api/movie.api";
 import Loader from "../components/ui/Loader";
-import { addWatchedMovie, getMovieHistory, removeMovieFromHistory } from "../api/history.api";
+import Modal from "../components/ui/Modal";
+import { addWatchedMovie, getMovieHistory, removeMovieFromHistory, updateRating } from "../api/history.api";
 import { addMovieToWatchList, getIsMovieWatchListed, removeMovieFromWatchList } from "../api/watchList.api";
-import { BookmarkIcon, CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
+import { BookmarkIcon, ChatBubbleLeftRightIcon, CheckCircleIcon, ClockIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { StarIcon } from "lucide-react";
+import { addMovieReview } from "../api/reviews.api";
 
 export default function MoviePage() {
     const [movieData, setMovieData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [watched, setWatched] = useState(false);
+    const [historyEntry, setHistoryEntry] = useState(null);
     const [inList, setInList] = useState(false);
     const [reviewOpen, setReviewOpen] = useState(false);
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
 
     const { movieId } = useParams();
+
+    const reviewRef = useRef(null);
 
     useEffect(() => {
         if (!movieId) return;
@@ -27,6 +35,8 @@ export default function MoviePage() {
                 ]);
 
                 setMovieData(res[0]);
+                setHistoryEntry(res[1].data);
+                setRating(res[1].data ? res[1].data.rating : 0);
                 setWatched(res[1].data != null);
                 setInList(res[2].data.watchListed);
 
@@ -53,6 +63,7 @@ export default function MoviePage() {
                     if (inList) setInList(false);
 
                     setWatched(true);
+                    setHistoryEntry(res.data);
 
                     setMovieData((prev) => ({
                         ...prev,
@@ -82,6 +93,53 @@ export default function MoviePage() {
             console.error("Error updating watchlist status: ", error);
         }
     }
+
+    const handleMovieRating = async (rating) => {
+        if (!watched) {
+            alert("You need to mark the movie as watched before rating.");
+            return;
+        } else {
+            try {
+                const res = await updateRating(historyEntry._id, rating);
+                if (res.status === 200) {
+                    setMovieData((prev) => ({
+                        ...prev,
+                        ...res.data
+                    }));
+                }
+            } catch (error) {
+                console.error("Error updating rating: ", error);
+            }
+        }
+    }
+
+const handlePostReview = async () => {
+    if (!watched) {
+        alert("You need to mark the movie as watched before rating.");
+        return;
+    }
+
+    if (!reviewRef.current || !reviewRef.current.value.trim()) {
+        alert("Please write a review.");
+        return;
+    }
+
+    try {
+        await addMovieReview(movieData._id, {
+            review: reviewRef.current.value.trim()
+        });
+
+        setReviewOpen(false);
+        reviewRef.current.value = "";
+
+    } catch (error) {
+        if (error.response) {
+            alert(error.response.data.error);
+        } else {
+            console.error("Error posting review:", error);
+        }
+    }
+};
 
     if (loading) return <Loader />;
 
@@ -123,20 +181,69 @@ export default function MoviePage() {
                         <motion.h1
                             initial={{ x: -20, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
-                            className="text-3xl md:text-5xl font-black text-stone-900 tracking-tight"
+                            className="text-4xl md:text-6xl font-black text-stone-900 tracking-tighter"
                         >
-                            {movieData?.title} <span className="font-light text-stone-400">{releaseYear}</span>
-                            <br />
-                            <span className="text-sm border-2 p-1 rounded-sm">{movieData?.originalLanguage?.toUpperCase()}</span>
-                            {movieData?.adult == true && <span className="text-sm text-red-500 border-2 p-1 rounded-sm font-bold ml-2">18+</span>}
+                            {movieData?.title} <span className="font-thin text-stone-400 ml-2">{releaseYear}</span>
                         </motion.h1>
 
-                        <div className="mt-4 flex flex-wrap gap-2">
-                            {movieData?.genreNames.map((g) => (
-                                <span key={g} className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md bg-white border border-amber-600 text-amber-600">
-                                    {g}
+                        {/* Metadata Badges */}
+                        <div className="mt-3 flex items-center gap-3">
+                            <span className="text-[10px] font-bold border-2 border-stone-800 px-2 py-0.5 rounded text-stone-800 bg-white">
+                                {movieData?.originalLanguage?.toUpperCase()}
+                            </span>
+                            {movieData?.adult && (
+                                <span className="text-[10px] font-black text-red-600 border-2 border-red-600 px-2 py-0.5 rounded bg-red-50">
+                                    18+
                                 </span>
-                            ))}
+                            )}
+                            <div className="h-1 w-1 rounded-full bg-stone-300" />
+                            <div className="flex flex-wrap gap-2">
+                                {movieData?.genreNames.map((g) => (
+                                    <span key={g} className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                                        {g}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/*  */}
+                        <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-6 border-t border-stone-100 pt-6">
+                            <div>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-2">
+                                    Your Rating
+                                </p>
+                                <div
+                                    className="flex items-center gap-1 group/rating"
+                                    onMouseLeave={() => setHoverRating(0)}
+                                >
+                                    {[...Array(10)].map((_, i) => {
+                                        const starValue = i + 1;
+                                        const isActive = starValue <= (hoverRating || rating);
+                                        return (
+                                            <button
+                                                key={starValue}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setRating(starValue);
+                                                    handleMovieRating(starValue);
+                                                }}
+                                                onMouseEnter={() => setHoverRating(starValue)}
+                                                className="relative transition-transform hover:scale-125 active:scale-95"
+                                            >
+                                                <StarIcon
+                                                    className={`size-6 md:size-8 transition-colors ${isActive ? 'fill-amber-400 text-amber-400' : 'fill-transparent text-stone-200'
+                                                        }`}
+                                                />
+                                            </button>
+                                        );
+                                    })}
+                                    {(hoverRating || rating) > 0 && (
+                                        <span className="ml-4 text-2xl font-black text-stone-900 tabular-nums">
+                                            {hoverRating || rating}<span className="text-stone-300 text-sm font-medium">/10</span>
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -178,12 +285,58 @@ export default function MoviePage() {
                             trueIcon={<BookmarkIcon className="size-5" />}
                             falseIcon={<BookmarkIcon className="size-5" />}
                         />
-                        <button
-                            onClick={() => setReviewOpen(!reviewOpen)}
-                            className="w-full py-4 rounded-xl border-2 border-dashed border-stone-200 text-stone-400 hover:border-stone-400 hover:text-stone-600 transition-all font-medium text-sm"
-                        >
-                            {reviewOpen ? "Close Review" : "Write a Review"}
-                        </button>
+                        <div>
+                            <button
+                                onClick={() => setReviewOpen(true)}
+                                className="group flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50/50 py-8 text-stone-500 transition-all hover:border-stone-400 hover:bg-white hover:text-stone-800"
+                            >
+                                <ChatBubbleLeftRightIcon className="size-6" />
+                                <span className="text-lg font-semibold">Write a Review</span>
+                            </button>
+
+                            {/* Modal for Review */}
+                            <Modal open={reviewOpen} setOpen={setReviewOpen}>
+                                <div className="relative overflow-hidden bg-white shadow-2xl ring-1 ring-black/5 sm:rounded-2xl w-full max-w-lg mx-auto">
+
+                                    <button
+                                        onClick={() => setReviewOpen(false)}
+                                        className="absolute right-4 top-4 z-10 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
+                                        aria-label="Close modal"
+                                    >
+                                        <XMarkIcon className="size-6" />
+                                    </button>
+
+                                    <div className="border-b border-stone-100 bg-stone-50/50 px-8 py-6 pr-14">
+                                        <h2 className="text-2xl font-bold text-stone-900">Share your thoughts</h2>
+                                        <p className="mt-1 text-sm text-stone-500">How was the cinematography and pacing?</p>
+                                    </div>
+
+                                    <div className="p-8">
+                                        <textarea
+                                            ref={reviewRef}
+                                            rows={6}
+                                            className="w-full rounded-xl border border-stone-300 p-4 text-stone-800 placeholder:text-stone-400 focus:border-stone-500 focus:ring-2 focus:ring-stone-500/20"
+                                            placeholder="Share your thoughts..."
+                                        />
+
+                                        <div className="mt-8 flex justify-end gap-3">
+                                            <button
+                                                onClick={() => setReviewOpen(false)}
+                                                className="rounded-xl px-6 py-3 text-sm font-semibold text-stone-600 hover:bg-stone-100"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={handlePostReview}
+                                                className="rounded-xl bg-stone-900 px-8 py-3 text-sm font-semibold text-white transition-all hover:bg-stone-800"
+                                            >
+                                                Post Review
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Modal>
+                        </div>
                     </motion.aside>
                 </div>
             </div>
