@@ -43,6 +43,7 @@ export default function SearchResultPage() {
         }
 
         if (movieRes.status === "fulfilled") {
+            console.log("Movies found:", movieRes.value.data.movies);
             setMovies(movieRes.value?.data.movies || []);
         } else {
             console.error("Movies failed:", movieRes.reason);
@@ -101,7 +102,7 @@ export default function SearchResultPage() {
                             {movies.length > 0 ? (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
                                     {movies.map((m) => (
-                                        <MovieCard key={m.id} title={m.title} poster={m.poster_path} rating={m.voteAverage} releaseDate={m.release_date} />
+                                        <MovieCard key={m._id} id={m._id} title={m.title} poster={m.posterPath} rating={m.voteAverage} releaseDate={m.releaseDate} />
                                     ))}
                                 </div>
                             ) : (
