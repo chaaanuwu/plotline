@@ -42,6 +42,27 @@ export const getUserMe = async (req, res) => {
     }
 };
 
+export const verifyPassword = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { password } = req.body;
+
+        const user = await User.findById(userId).select("+password");
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        return res.status(200).json({ success: true, isValid: isMatch });
+
+    } catch (error) {
+        console.error("Verification error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
 export const editProfile = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -92,7 +113,7 @@ export const updateAccountSettings = async (req, res) => {
         delete userObj.password;
 
         res.status(200).json({ success: true, user: userObj });
-        
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, error: "Server error" });
