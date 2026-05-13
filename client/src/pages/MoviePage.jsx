@@ -9,6 +9,7 @@ import { addMovieToWatchList, getIsMovieWatchListed, removeMovieFromWatchList } 
 import { BookmarkIcon, ChatBubbleLeftRightIcon, CheckCircleIcon, ClockIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { StarIcon } from "lucide-react";
 import { addMovieReview } from "../api/reviews.api";
+import { toast } from "sonner";
 
 export default function MoviePage() {
     const [movieData, setMovieData] = useState(null);
@@ -55,6 +56,8 @@ export default function MoviePage() {
                 const res = await removeMovieFromHistory(movieData._id);
                 if (res.status === 200) {
                     setWatched(false);
+                    setRating(0);
+                    toast.success("Movie removed from the watch history.");
                 }
             } else {
                 const res = await addWatchedMovie(movieData.title);
@@ -63,15 +66,21 @@ export default function MoviePage() {
                     if (inList) setInList(false);
 
                     setWatched(true);
-                    setHistoryEntry(res.data);
+                    toast.success("Movie added to the watch history.");
 
                     setMovieData((prev) => ({
                         ...prev,
                         ...res.data
                     }));
+
+                    setHistoryEntry((prev) => ({
+                        ...prev,
+                        ...res.data.data
+                    }));
                 }
             }
         } catch (error) {
+            toast.error("Failed to add movie to the watch history.");
             console.error("Error updating watch status: ", error);
         }
     }
@@ -82,64 +91,65 @@ export default function MoviePage() {
                 const res = await removeMovieFromWatchList(movieData._id);
                 if (res.status === 200) {
                     setInList(false);
+                    toast.success("Movie removed from the watchlist.");
                 }
             } else {
                 const res = await addMovieToWatchList(movieData.title);
                 if (res.status === 201) {
                     setInList(true);
+                    toast.success("Movie added to the watchlist.");
                 }
             }
         } catch (error) {
+            toast.error("Failed to add movie to the watchlist.");
             console.error("Error updating watchlist status: ", error);
         }
     }
 
     const handleMovieRating = async (rating) => {
         if (!watched) {
-            alert("You need to mark the movie as watched before rating.");
+            setRating(0);
+            toast.info("You need to mark the movie as watched before rating.");
             return;
         } else {
             try {
                 const res = await updateRating(historyEntry._id, rating);
-                if (res.status === 200) {
+                if (res.data.success) {
                     setMovieData((prev) => ({
                         ...prev,
                         ...res.data
                     }));
+                    toast.success("Rating updated successfully.");
                 }
             } catch (error) {
+                toast.error("Failed to update rating.");
                 console.error("Error updating rating: ", error);
             }
         }
     }
 
-const handlePostReview = async () => {
-    if (!watched) {
-        alert("You need to mark the movie as watched before rating.");
-        return;
-    }
-
-    if (!reviewRef.current || !reviewRef.current.value.trim()) {
-        alert("Please write a review.");
-        return;
-    }
-
-    try {
-        await addMovieReview(movieData._id, {
-            review: reviewRef.current.value.trim()
-        });
-
-        setReviewOpen(false);
-        reviewRef.current.value = "";
-
-    } catch (error) {
-        if (error.response) {
-            alert(error.response.data.error);
-        } else {
-            console.error("Error posting review:", error);
+    const handlePostReview = async () => {
+        if (!reviewRef.current || !reviewRef.current.value.trim()) {
+            toast.info("Review cannot be empty.");
+            return;
         }
-    }
-};
+
+        try {
+            await addMovieReview(movieData._id, {
+                review: reviewRef.current.value.trim()
+            });
+
+            setReviewOpen(false);
+            reviewRef.current.value = "";
+
+        } catch (error) {
+            if (error.response) {
+                toast.error(error.response.data.error);
+            } else {
+                console.error("Error posting review:", error);
+            }
+        }
+    };
 
     if (loading) return <Loader />;
 
@@ -287,7 +297,10 @@ const handlePostReview = async () => {
                         />
                         <div>
                             <button
-                                onClick={() => setReviewOpen(true)}
+                                onClick={() => {
+                                    watched ?
+                                        setReviewOpen(true) : toast.info("You need to mark the movie as watched before posting a review.");
+                                }}
                                 className="group flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50/50 py-8 text-stone-500 transition-all hover:border-stone-400 hover:bg-white hover:text-stone-800"
                             >
                                 <ChatBubbleLeftRightIcon className="size-6" />

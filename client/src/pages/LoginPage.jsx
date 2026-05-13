@@ -4,6 +4,7 @@ import bg from "../assets/bb-bg.jpg";
 import Footer from "../components/Footer";
 import useUserStore from "../store/userStore";
 import { signIn } from "../api/auth.api";
+import { toast } from "sonner";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -24,9 +25,14 @@ export default function LoginPage() {
 
             setUser(data.data.user);
 
+            toast.success("Login successful!");
+
         } catch (error) {
             console.error("Login error:", error);
             setError(error.response?.data?.message || "Login failed");
+            if (error.response?.status === 401) {
+                toast.error("Invalid email or password");
+            }
         }
     };
 
