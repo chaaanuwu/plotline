@@ -23,6 +23,22 @@ export const editProfileData = async (pfp, about) => {
     return res.data;
 }
 
+export const updateAccountSettings = async (firstName, lastName, email, password) => {
+    const res = await axiosInstance.put('/user/me/update-account', {
+        firstName,
+        lastName,
+        email,
+        password
+    });
+
+    return res;
+}
+
+export const verifyCurrentPassword = async (password) => {
+    const res = await axiosInstance.post('/user/me/verify-password', { password });
+    return res.data.isValid;
+}
+
 export const searchUsers = async (query) => {
     const res = await axiosInstance.get(`/user/search?q=${query}`);
     return res.data;

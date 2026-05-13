@@ -280,7 +280,11 @@ export default function Profile() {
                                             Share Profile
                                         </button>
                                         {isMyProfile && (
-                                            <button className="w-full text-left p-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors uppercase tracking-wider">
+                                            <button
+                                            onClick={() => {
+                                                navigation.navigate('/settings')
+                                            }}
+                                            className="w-full text-left p-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors uppercase tracking-wider">
                                                 Settings
                                             </button>
                                         )}

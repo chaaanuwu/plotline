@@ -101,7 +101,7 @@ export default function EditProfile() {
                             <div className="flex-1 text-center md:text-left">
                                 <p className="text-stone-900 font-bold text-lg">Change Avatar</p>
                                 <p className="text-stone-400 text-sm leading-relaxed">
-                                    Upload a high-quality cinematic square image. <br />
+                                    Upload a high-quality image. <br />
                                     Supports JPG, PNG or WebP.
                                 </p>
                             </div>

@@ -11,6 +11,7 @@ import Navbar from "./components/Navbar";
 import TmdbMovie from "./pages/MoviesPage";
 import SearchResultPage from "./pages/SearchResultPage";
 import EditProfile from "./pages/EditProfile";
+import SettingsPage from "./pages/Settings";
 
 function isTokenExpired(token) {
     if (!token) return true;
@@ -114,6 +115,15 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <EditProfile />
+                            : <Navigate to="/login" />
+                    }
+                />
+
+                <Route
+                    path="/settings"
+                    element={
+                        token && !isExpired
+                            ? <SettingsPage />
                             : <Navigate to="/login" />
                     }
                 />
