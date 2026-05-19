@@ -4,6 +4,7 @@ import useUserStore from "../store/userStore";
 import defaultPfp from "../assets/default-pfp.jpg";
 import { editProfileData } from "../api/user.api";
 import axios from "axios";
+import { toast } from "sonner";
 
 export default function EditProfile() {
     const { user, setUser } = useUserStore();
@@ -42,10 +43,12 @@ export default function EditProfile() {
             if (res.success) {
                 setUser({ ...user, user: res.user });
                 setLoading(false);
+                toast.success("Profile updated successfully!")
             }
         } catch (err) {
             console.error(err);
             setLoading(false);
+            toast.error("Failed to update profile.")
         }
     };
 

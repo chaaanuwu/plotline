@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import useUserStore from "../store/userStore";
 import { useEffect, useState } from "react";
 import {  updateAccountSettings, verifyCurrentPassword } from "../api/user.api";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
     const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ export default function SettingsPage() {
     });
 
     const user = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
     const userData = user?.user;
 
     useEffect(() => {
@@ -58,10 +60,12 @@ export default function SettingsPage() {
 
             const res = await updateAccountSettings(formData.firstName, formData.lastName, formData.email, formData.newPassword);
 
-            if (res.success) {
-                user.setUser({ ...user, user: res.user });
+            console.log("Update account settings response: ", res);
+
+            if (res.data.success) {
+                setUser({ ...user, user: res.data.user });
                 setFormData(prev => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
-                alert("Settings updated successfully!");
+                toast.success("Account settings updated successfully!");
             }
         } catch (error) {
             console.error("Error updating account settings: ", error);

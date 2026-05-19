@@ -82,21 +82,20 @@ export default function Profile() {
                     }));
                 }
             } else {
-                // FOLLOW LOGIC
+                // Follow
                 const res = await followUser(profileId);
                 if (res.status === 200) {
                     setFollowing(true);
                     setProfileData(prev => ({
                         ...prev,
                         followersCount: (prev.followersCount || 0) + 1,
-                        // Add current user to local followers array to keep useEffect happy
+                        // Add current user to local followers array
                         followers: [...prev.followers, { followerId: user.user._id }]
                     }));
                 }
             }
         } catch (error) {
             console.error("Toggle follow failed", error);
-            // Optional: Alert the user or rollback UI state
         }
     };
 

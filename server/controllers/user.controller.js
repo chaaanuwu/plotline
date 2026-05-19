@@ -93,7 +93,7 @@ export const editProfile = async (req, res) => {
 export const updateAccountSettings = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { firstName, lastName, password, gender } = req.body;
+        const { firstName, lastName, email, password, gender } = req.body;
 
         const user = await User.findById(userId);
         if (!user) {
@@ -102,6 +102,7 @@ export const updateAccountSettings = async (req, res) => {
 
         if (firstName) user.firstName = firstName;
         if (lastName) user.lastName = lastName;
+        if (email) user.email = email;
         if (password) {
             user.password = await bcrypt.hash(password, 10);
         }
