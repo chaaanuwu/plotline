@@ -44,3 +44,39 @@ export const getTopRatedMovies = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 }
+
+export const getLandingImg = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+
+    let trending = await TrendingMovies.findOne({ date: today }).populate("movies");
+
+    if (!trending) {
+      trending = await TrendingMovies.findOne()
+        .sort({ createdAt: -1 })
+        .populate("movies");
+    }
+
+    if (!trending || !trending.movies || trending.movies.length === 0) {
+      return res.status(404).json({ message: "No trending movies found" });
+    }
+
+    let randomMovie = null;
+
+    for (let i = 0; i < 10; i++) {
+      const index = Math.floor(Math.random() * trending.movies.length);
+      const movie = trending.movies[index];
+
+      if (movie?.backdropPath) {
+        randomMovie = movie;
+        break;
+      }
+    }
+
+    return res.status(200).json(randomMovie || null);
+
+  } catch (error) {
+    console.error("Landing image error:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};

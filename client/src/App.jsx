@@ -12,6 +12,7 @@ import TmdbMovie from "./pages/MoviesPage";
 import SearchResultPage from "./pages/SearchResultPage";
 import EditProfile from "./pages/EditProfile";
 import SettingsPage from "./pages/Settings";
+import Landing from "./pages/Landing";
 
 function isTokenExpired(token) {
     if (!token) return true;
@@ -40,9 +41,17 @@ export default function App() {
 
     return (
         <BrowserRouter>
-            <Navbar />
+            {token && !isExpired && <Navbar />}
 
             <Routes>
+                <Route
+                    path="/"
+                    element={
+                        token && !isExpired
+                            ? <Feed />
+                            : <Landing />
+                    }
+                />
 
                 {/* Login Route */}
                 <Route
@@ -60,7 +69,7 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <Feed />
-                            : <Navigate to="/login" />
+                            : <Landing />
                     }
                 />
 
@@ -70,7 +79,7 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <Profile />
-                            : <Navigate to="/login" />
+                            : <Landing />
                     }
                 />
 
@@ -79,7 +88,7 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <Profile />
-                            : <Navigate to="/login" />
+                            : <Landing />
                     }
                 />
 
@@ -88,7 +97,7 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <TmdbMovie />
-                            : <Navigate to="/login" />
+                            : <Landing />
                     }
                 />
 
@@ -97,7 +106,7 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <MoviePage />
-                            : <Navigate to="/login" />
+                            : <Landing />
                     }
                 />
 
@@ -106,7 +115,7 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <SearchResultPage />
-                            : <Navigate to="/login" />
+                            : <Landing />
                     }
                 />
 
@@ -115,7 +124,7 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <EditProfile />
-                            : <Navigate to="/login" />
+                            : <Landing />
                     }
                 />
 
@@ -124,7 +133,7 @@ export default function App() {
                     element={
                         token && !isExpired
                             ? <SettingsPage />
-                            : <Navigate to="/login" />
+                            : <Landing />
                     }
                 />
 

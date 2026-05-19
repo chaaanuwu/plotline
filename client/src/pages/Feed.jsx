@@ -14,6 +14,10 @@ export default function Feed() {
             <button onClick={() => navigate("/me")}>
                 Go to Profile
             </button>
+
+            <button onClick={() => navigate("/landing")}>
+                Landing
+            </button>
         </>
     );
 }
