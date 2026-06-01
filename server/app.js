@@ -3,6 +3,7 @@ import cors from "cors";
 
 import { BASE_URL } from './config/env.js';
 import authRouter from './routes/auth.routes.js';
+import feedRouter from './routes/feed.route.js';
 import userRouter from './routes/user.route.js';
 import errorMiddleware from './middlewares/error.middleware.js';
 import historyRouter from './routes/history.route.js';
@@ -34,6 +35,7 @@ fetchAndStoreTrending().then(() => console.log("🔥 Initial trending fetched"))
 fetchAndStoreTopRated().then(() => console.log("🔥 Initial top rated fetched"));
 
 app.use(`${BASE_URL}/auth`, authRouter);
+app.use(`${BASE_URL}/feed`, feedRouter);
 app.use(`${BASE_URL}/user`, userRouter);
 app.use(`${BASE_URL}/movies`, tmdbRouter);
 app.use(`${BASE_URL}/movies`, movieRouter);

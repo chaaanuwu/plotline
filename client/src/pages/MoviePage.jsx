@@ -10,6 +10,8 @@ import { BookmarkIcon, ChatBubbleLeftRightIcon, CheckCircleIcon, ClockIcon, XMar
 import { StarIcon } from "lucide-react";
 import { addMovieReview } from "../api/reviews.api";
 import { toast } from "sonner";
+import plotlineCover from "../assets/plotline-cover.png"
+import popcornCup from "../assets/popcorn-cup.png"
 
 export default function MoviePage() {
     const [movieData, setMovieData] = useState(null);
@@ -163,7 +165,7 @@ export default function MoviePage() {
                     initial={{ scale: 1.1, opacity: 0 }}
                     animate={{ scale: 1, opacity: 0.6 }}
                     transition={{ duration: 1.2 }}
-                    src={`${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${movieData?.backdropPath}`}
+                    src={movieData?.backdropPath ? `${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${movieData?.backdropPath}` : plotlineCover}
                     className="w-full h-full object-cover"
                 />
 
@@ -179,7 +181,7 @@ export default function MoviePage() {
                         className="shrink-0 group relative"
                     >
                         <img
-                            src={`${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${movieData?.posterPath}`}
+                            src={movieData?.posterPath ? `${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${movieData?.posterPath}` : popcornCup}
                             alt={movieData?.title}
                             className="w-40 md:w-56 rounded-2xl shadow-2xl border-[6px] border-white transition-transform duration-500 group-hover:scale-[1.02]"
                             style={{ aspectRatio: "2/3" }}

@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
-import bbBg from "../assets/bb-bg.jpg";
+import plotlineCover from "../assets/plotline-cover.png"
 import defaultPfp from "../assets/default-pfp.jpg";
 import Tabs from "../components/Tabs";
 import useUserStore from "../store/userStore";
@@ -143,7 +143,9 @@ export default function Profile() {
         setIsChangeCoverModalOpen(true);
         try {
             const bannerData = await getHistoryBanner();
-            const movies = bannerData.data.map(item => item.movieId);
+            const movies = bannerData.data
+                .filter(item => item.movieId.backdropPath != null)
+                .map(item => item.movieId);
             setBanners(movies);
         } catch (err) {
             console.error("Failed to fetch banners", err);
@@ -179,7 +181,7 @@ export default function Profile() {
                     initial={{ scale: 1.1, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.8 }}
-                    src={profileData.user.cover ? `${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${profileData.user.cover}` : bbBg}
+                    src={profileData.user.cover ? `${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${profileData.user.cover}` : plotlineCover}
                     alt="Cover"
                     className="w-full h-full object-cover"
                     draggable="false"
@@ -280,10 +282,10 @@ export default function Profile() {
                                         </button>
                                         {isMyProfile && (
                                             <button
-                                            onClick={() => {
-                                                navigation.navigate('/settings')
-                                            }}
-                                            className="w-full text-left p-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors uppercase tracking-wider">
+                                                onClick={() => {
+                                                    navigation.navigate('/settings')
+                                                }}
+                                                className="w-full text-left p-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors uppercase tracking-wider">
                                                 Settings
                                             </button>
                                         )}
