@@ -13,6 +13,7 @@ import SearchResultPage from "./pages/SearchResultPage";
 import EditProfile from "./pages/EditProfile";
 import SettingsPage from "./pages/Settings";
 import Landing from "./pages/Landing";
+import Loader from "./components/ui/Loader";
 
 function isTokenExpired(token) {
     if (!token) return true;
@@ -36,7 +37,7 @@ export default function App() {
     const isExpired = isTokenExpired(token);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <Loader />;
     }
 
     return (
