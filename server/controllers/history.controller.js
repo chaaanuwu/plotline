@@ -226,17 +226,26 @@ export const getUserHistory = async (req, res) => {
   try {
     const { userId } = req.params;
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const skip = (page - 1) * limit;
+
     const movies = await History.find({ userId })
       .sort({ watchedAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate('movieId', 'title posterPath banner overview releaseDate');
 
-    if (!movies.length) {
-      return res.status(404).json({ success: false, message: 'No history found for this user' });
-    }
+    const total = await History.countDocuments({ userId });
 
-    res.status(200).json({ success: true, data: movies });
+    res.status(200).json({
+      success: true,
+      data: movies,
+      hasMore: skip + movies.length < total
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error: ', error: error.message });
   }
 };

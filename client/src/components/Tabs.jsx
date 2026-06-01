@@ -5,6 +5,7 @@ import defaultPfp from "../assets/default-pfp.jpg";
 import { getMyReviews, getUserReviews } from "../api/reviews.api";
 import HistoryTab from "./HistoryTab";
 import Loader from "./ui/Loader";
+import WatchListTab from "./WatchListTab";
 
 export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
     const [activeTab, setActiveTab] = useState("reviews");
@@ -121,12 +122,7 @@ export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
 
                             {activeTab === "history" && <HistoryTab />}
                             
-                            {activeTab === "watchlist" && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-                                    {/* Map your watchlist here when ready */}
-                                    <EmptyState message="Your watchlist is waiting for its first entry." />
-                                </div>
-                            )}
+                            {activeTab === "watchlist" && <WatchListTab />}
                         </motion.div>
                     )}
                 </AnimatePresence>

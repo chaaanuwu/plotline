@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import bg from "../assets/bb-bg.jpg";
+import bg from "../assets/plotline-cover.png";
 import Footer from "../components/Footer";
 import useUserStore from "../store/userStore";
 import { signIn } from "../api/auth.api";

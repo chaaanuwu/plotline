@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 import plotlineCover from "../assets/plotline-cover.png"
 import defaultPfp from "../assets/default-pfp.jpg";
@@ -80,6 +81,7 @@ export default function Profile() {
                             (f.followerId?._id || f.followerId || f._id) !== user.user._id
                         )
                     }));
+                    toast.success("Unfollowed successfully");
                 }
             } else {
                 // Follow
@@ -92,9 +94,11 @@ export default function Profile() {
                         // Add current user to local followers array
                         followers: [...prev.followers, { followerId: user.user._id }]
                     }));
+                    toast.success("Followed successfully");
                 }
             }
         } catch (error) {
+            toast.error("Failed to update follow status");
             console.error("Toggle follow failed", error);
         }
     };

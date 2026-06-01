@@ -5,6 +5,12 @@ export const getIsMovieWatchListed = async (movieId) => {
     return res.data;
 }
 
+export const getWatchList = async (userId, currentPage) => {
+    const url = userId ? `/watchlist/${userId}` : `/watchlist`;
+    const res = await axiosInstance.get(`${url}?page=${currentPage}`);
+    return res.data;
+}
+
 export const addMovieToWatchList = async (title) => {
     const res = await axiosInstance.post('/watchlist', { title });
     return res;
