@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export default function Loader({ text = "Loading..." }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-100 w-full bg-stone-50/50">
+    <div className="flex flex-col items-center justify-center min-h-100 w-full bg-transparent relative">
       <div className="relative flex items-center justify-center">
         
         {/* OUTER REEL PIECES */}
