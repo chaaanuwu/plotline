@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { getFeedReviews } from "../api/feed.api";
 import ReviewCard from "../components/ui/ReviewCard";
 import Loader from "../components/ui/Loader";
+import useUserStore from "../store/userStore";
+import defaultPfp from "../assets/default-pfp.jpg";
 
 export default function Feed() {
     const [feed, setFeed] = useState([]);
     const[loading, setLoading] = useState(true);
-    
-    const defaultPfp = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80";
+
+    const user = useUserStore((state) => state.user);
 
     useEffect(() => {
         const fetchFeed = async () => {
