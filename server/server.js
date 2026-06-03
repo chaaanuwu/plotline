@@ -1,7 +1,7 @@
 import app from "./app.js";
 import connectToDatabase from "./database/mongodb.js";
 
-const port = process.env.PORT;
+const port = process.env.PORT || 5499;
 
 await connectToDatabase();
 
