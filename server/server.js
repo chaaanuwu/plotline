@@ -6,6 +6,6 @@ const port = process.env.PORT || PORT || 5000;
 
 await connectToDatabase();
 
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`Server running on port ${port}`);
 });
