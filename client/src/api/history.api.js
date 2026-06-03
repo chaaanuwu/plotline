@@ -1,9 +1,9 @@
 import axios from "axios";
 import axiosInstance from "./axiosInstance";
 
-export const getHistory = async (userId) => {
+export const getHistory = async (userId, currentPage) => {
     const url = userId ? `/history/${userId}` : `/history`;
-    const res = await axiosInstance.get(url);
+    const res = await axiosInstance.get(`${url}?page=${currentPage}`);
     return res.data;
 }
 

@@ -50,17 +50,61 @@ export const isMovieWatchListed = async (req, res) => {
   }
 }
 
+/*
+  Get current user's watchlist
+*/
 export const getWatchListMovies = async (req, res) => {
   try {
     const userId = req.user.userId;
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const skip = (page - 1) * limit;
+
     const movies = await WatchList.find({ userId })
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate('movieId', 'title posterPath banner genreNames overview releaseDate');
+
+      const total = await WatchList.countDocuments({ userId });
 
     res.status(200).json({
       success: true,
-      data: movies
+      data: movies,
+      hasMore: skip + movies.length < total
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+};
+
+/*
+  Get public user watchlist
+*/
+export const getPublicWatchListMovies = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const skip = (page - 1) * limit;
+
+    const movies = await WatchList.find({ userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('movieId', 'title posterPath banner genreNames overview releaseDate');
+
+      const total = await WatchList.countDocuments({ userId });
+
+    res.status(200).json({
+      success: true,
+      data: movies,
+      hasMore: skip + movies.length < total
     });
   } catch (error) {
     console.error(error);

@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for cancellation routing
 import { motion } from "framer-motion";
 import useUserStore from "../store/userStore";
 import defaultPfp from "../assets/default-pfp.jpg";
@@ -9,19 +10,24 @@ import { toast } from "sonner";
 export default function EditProfile() {
     const { user, setUser } = useUserStore();
     const [loading, setLoading] = useState(false);
-    const [about, setAbout] = useState(user?.user?.about || "");
-    const [previewPfp, setPreviewPfp] = useState(user?.user?.pfp || defaultPfp);
+    
+    // FIXED: Pull directly from the root user object structure
+    const [about, setAbout] = useState(user?.about || "");
+    const [previewPfp, setPreviewPfp] = useState(user?.pfp || defaultPfp);
     const [selectedPfpFile, setSelectedPfpFile] = useState(null);
 
     const fileInputRef = useRef(null);
+    const navigate = useNavigate();
 
     const handleSave = async (e) => {
         e.preventDefault();
         setLoading(true);
+        
         try {
-            setLoading(true);
-            let imageUrl = user.user.pfp;
+            // FIXED: Safely read existing profile photo directly from correct root path
+            let imageUrl = user?.pfp || "";
 
+            // Cloudinary Image Stream Processing Upload
             if (selectedPfpFile) {
                 const formData = new FormData();
                 formData.append("file", selectedPfpFile);
@@ -40,15 +46,26 @@ export default function EditProfile() {
 
             const res = await editProfileData(imageUrl, about);
 
-            if (res.success) {
-                setUser({ ...user, user: res.user });
-                setLoading(false);
-                toast.success("Profile updated successfully!")
+            // Dynamically check response format structure strings
+            const isSuccess = res?.success || res?.data?.success;
+            const updatedUser = res?.user || res?.data?.user;
+
+            if (isSuccess && updatedUser) {
+                // FIXED: Keep state fully flattened to preserve global reactivity across Navbar/Profile
+                setUser(updatedUser);
+                
+                toast.success("Profile updated successfully!");
+                
+                // Route user smoothly back to their personal profile view
+                navigate("/me");
+            } else {
+                throw new Error(res?.message || "Server denied updating profile modifications.");
             }
         } catch (err) {
-            console.error(err);
+            console.error("Profile payload sync error:", err);
+            toast.error(err.response?.data?.message || err.message || "Failed to update profile.");
+        } finally {
             setLoading(false);
-            toast.error("Failed to update profile.")
         }
     };
 
@@ -117,7 +134,7 @@ export default function EditProfile() {
                         <div className="relative">
                             <textarea
                                 value={about}
-                                onChange={(e) => setAbout(e.target.value)}
+                                onChange={(e) => setAbout(e.target.value.slice(0, 250))} // Enforce client boundary max ceiling length limit
                                 rows="5"
                                 placeholder="Write a short bio about your cinematic journey..."
                                 className="w-full p-6 bg-stone-50 border-2 border-transparent focus:border-amber-400/20 focus:bg-white rounded-3xl outline-none transition-all duration-300 text-stone-800 font-serif italic text-lg leading-relaxed resize-none"
@@ -128,9 +145,11 @@ export default function EditProfile() {
                         </div>
                     </section>
 
+                    {/* Form Submission Actions Layout Footer Panel */}
                     <div className="flex items-center justify-end gap-4 pt-4">
                         <button
                             type="button"
+                            onClick={() => navigate("/me")} // FIXED: Navigate user safely out of editing layer on cancel click
                             className="px-8 py-4 text-stone-400 font-bold hover:text-stone-900 transition-colors"
                         >
                             Cancel
@@ -148,13 +167,16 @@ export default function EditProfile() {
                     </div>
                 </form>
 
-                {/* Settings Link */}
+                {/* Settings Forwarding Block Link */}
                 <div className="mt-12 pt-8 border-t border-stone-200 text-center">
                     <p className="text-stone-400 text-sm font-medium">
                         Looking to change your name or password?
-                        <a href="/settings" className="ml-2 text-amber-600 font-black uppercase tracking-widest text-[10px] hover:underline">
+                        <span 
+                            onClick={() => navigate("/settings")} 
+                            className="ml-2 text-amber-600 font-black uppercase tracking-widest text-[10px] hover:underline cursor-pointer"
+                        >
                             Go to Account Settings
-                        </a>
+                        </span>
                     </p>
                 </div>
             </div>

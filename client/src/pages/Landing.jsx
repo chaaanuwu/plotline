@@ -13,7 +13,10 @@ import {
 import { getLandingImage } from '../api/tmdb.api';
 
 export default function Landing() {
-    const [heroImage, setHeroImage] = useState(null);
+    const [heroImage, setHeroImage] = useState(() => {
+        const cached = sessionStorage.getItem("landingHeroImage");
+        return cached ? JSON.parse(cached) : null;
+    });
 
     const hasFetched = useRef(false);
 
@@ -21,12 +24,16 @@ export default function Landing() {
         if (hasFetched.current) return;
         hasFetched.current = true;
 
+        if (heroImage) return;
+
         const fetchLandingImage = async () => {
             try {
                 const res = await getLandingImage();
                 const imgUrl = res.data?.backdropPath;
-
+                
                 setHeroImage(imgUrl);
+
+                sessionStorage.setItem("landingHeroImage", JSON.stringify(imgUrl));
 
             } catch (error) {
                 console.error("Error fetching landing image:", error);

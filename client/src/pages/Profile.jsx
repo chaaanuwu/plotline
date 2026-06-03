@@ -1,8 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // Swapped out broken navigation links
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
-import plotlineCover from "../assets/plotline-cover.png"
+import plotlineCover from "../assets/plotline-cover.png";
 import defaultPfp from "../assets/default-pfp.jpg";
 import Tabs from "../components/Tabs";
 import useUserStore from "../store/userStore";
@@ -27,30 +28,42 @@ export default function Profile() {
     const [selectedComment, setSelectedComment] = useState(null);
     const [banners, setBanners] = useState([]);
     const [selectedBackdrop, setSelectedBackdrop] = useState(null);
-    const user = useUserStore((state) => state.user);
+    
+    const user = useUserStore((state) => state.user); // Object root schema source of truth
     const { userId } = useParams();
+    const navigate = useNavigate(); // Corrected Web SPA routing mechanism
     const commentInputRef = useRef(null);
+
+    // Safety assignment: Check if this is the user's personal view
+    // If path param userId is undefined (on /me path) or matches user._id, it's their own profile
+    const isMyProfile = !userId || user?._id === userId;
 
     // Fetch profile data
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 setLoading(true);
-                const res = await getProfile(userId);
+                // Fallback assignment target calculation
+                const targetId = userId || user?._id;
+                
+                if (!targetId) return;
+
+                const res = await getProfile(targetId);
                 setProfileData(res);
             } catch (err) {
                 console.error("Failed to fetch profile", err);
+                toast.error("Failed to load cinematic profile");
             } finally {
                 setLoading(false);
             }
         };
         fetchProfile();
-    }, [userId]);
+    }, [userId, user?._id]);
 
-    // Check following status
+    // Check following status cleanly with matching data tokens
     useEffect(() => {
-        if (user?.user?._id && profileData?.followers) {
-            const loggedInUserId = user.user._id;
+        if (user?._id && profileData?.followers) {
+            const loggedInUserId = user._id;
 
             const isFollowing = profileData.followers.some((record) => {
                 const followerId = record.followerId?._id || record.followerId || record._id;
@@ -59,42 +72,42 @@ export default function Profile() {
 
             setFollowing(isFollowing);
         }
-    }, [profileData, user]);
+    }, [profileData, user?._id]);
 
     const handleFollowToggle = async () => {
-        // 1. Store the previous state in case the API fails (to rollback)
         const wasFollowing = following;
-        const profileId = profileData.user._id;
+        const profileId = profileData?.user?._id || profileData?._id;
+
+        if (!profileId || !user?._id) return;
 
         try {
             if (wasFollowing) {
-                // UNFOLLOW LOGIC
                 const res = await unfollowUser(profileId);
-                if (res.status === 200) {
+                if (res.status === 200 || res.data?.success) {
                     setFollowing(false);
                     setProfileData(prev => ({
                         ...prev,
                         followersCount: Math.max(0, (prev.followersCount || 0) - 1),
-                        // Remove current user from the local followers array
                         followers: prev.followers.filter(f =>
-                            (f.followerId?._id || f.followerId || f._id) !== user.user._id
+                            (f.followerId?._id || f.followerId || f._id) !== user._id
                         )
                     }));
+                    toast.success("Unfollowed successfully");
                 }
             } else {
-                // Follow
                 const res = await followUser(profileId);
-                if (res.status === 200) {
+                if (res.status === 200 || res.data?.success) {
                     setFollowing(true);
                     setProfileData(prev => ({
                         ...prev,
                         followersCount: (prev.followersCount || 0) + 1,
-                        // Add current user to local followers array
-                        followers: [...prev.followers, { followerId: user.user._id }]
+                        followers: [...prev.followers, { followerId: user._id }]
                     }));
+                    toast.success("Followed successfully");
                 }
             }
         } catch (error) {
+            toast.error("Failed to update follow status");
             console.error("Toggle follow failed", error);
         }
     };
@@ -105,11 +118,11 @@ export default function Profile() {
         setIsReplyModalOpen(true);
         try {
             const res = await getAllComments(review._id);
-            setComments(res.comments);
+            setComments(res.comments || res.data?.comments || []);
         } catch (error) {
             console.error("Failed to fetch comments", error);
         }
-    }
+    };
 
     const handlePostComment = async () => {
         const content = commentInputRef.current.value;
@@ -117,40 +130,41 @@ export default function Profile() {
 
         try {
             const res = await postComment(selectedReview._id, content);
-            if (res.data.success) {
-                setComments(prev => [...prev, res.data.comment]);
+            if (res.data?.success || res.success) {
+                const newComment = res.data?.comment || res.comment;
+                setComments(prev => [...prev, newComment]);
                 commentInputRef.current.value = "";
                 commentInputRef.current.style.height = 'auto';
             }
         } catch (error) {
             console.error("Failed to post comment", error);
         }
-    }
+    };
 
     const handleUpdateComment = async () => {
         try {
             const res = await updateComment(selectedReview._id, selectedComment, "Updated comment content");
             setSelectedComment(null);
-            if (res.data.success) {
+            if (res.data?.success || res.success) {
                 console.log("Comment updated successfully");
             }
         } catch (error) {
             console.error("Failed to update comment", error);
         }
-    }
+    };
 
     const handleChangeCover = async () => {
         setIsChangeCoverModalOpen(true);
         try {
             const bannerData = await getHistoryBanner();
-            const movies = bannerData.data
-                .filter(item => item.movieId.backdropPath != null)
+            const movies = (bannerData.data || bannerData)
+                .filter(item => item.movieId?.backdropPath != null)
                 .map(item => item.movieId);
             setBanners(movies);
         } catch (err) {
             console.error("Failed to fetch banners", err);
         }
-    }
+    };
 
     const handleSaveCover = async () => {
         if (!selectedBackdrop) return;
@@ -165,14 +179,14 @@ export default function Profile() {
             }));
             setIsChangeCoverModalOpen(false);
             setSelectedBackdrop(null);
+            toast.success("Cinematic cover canvas applied!");
         } catch (err) {
             console.error("Failed to set profile cover", err);
         }
-    }
+    };
 
     if (loading) return <Loader />;
-
-    const isMyProfile = user?.user?._id === profileData?.user?._id;
+    if (!profileData || !profileData.user) return <div className="text-white text-center py-20">Profile not found</div>;
 
     return (
         <main className="min-h-screen bg-stone-50 font-sans text-stone-900 selection:bg-amber-100">
@@ -228,12 +242,14 @@ export default function Profile() {
                                 <ProfileStat count={profileData.followersCount || 0} label="Followers" href="/followers" />
                                 <ProfileStat count={profileData.followingCount || 0} label="Following" href="/following" />
 
-                                <div className="hidden sm:flex items-center gap-2 text-stone-400 border-l border-stone-200 pl-6 ml-2">
-                                    <span className="material-symbols-outlined text-[18px]">calendar_month</span>
-                                    <span className="text-[10px] uppercase font-black tracking-widest">
-                                        Since {new Date(profileData.user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
-                                    </span>
-                                </div>
+                                {profileData.user.createdAt && (
+                                    <div className="hidden sm:flex items-center gap-2 text-stone-400 border-l border-stone-200 pl-6 ml-2">
+                                        <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+                                        <span className="text-[10px] uppercase font-black tracking-widest">
+                                            Since {new Date(profileData.user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
 
@@ -259,9 +275,7 @@ export default function Profile() {
                                 )
                             ) : (
                                 <button
-                                    onClick={() => {
-                                        navigation.navigate('/edit-profile')
-                                    }}
+                                    onClick={() => navigate('/edit-profile')}
                                     className="px-10 py-4 bg-white border border-stone-200 text-stone-600 rounded-2xl font-bold text-sm hover:bg-stone-50 transition-all shadow-sm active:scale-95">
                                     Edit Profile
                                 </button>
@@ -282,9 +296,7 @@ export default function Profile() {
                                         </button>
                                         {isMyProfile && (
                                             <button
-                                                onClick={() => {
-                                                    navigation.navigate('/settings')
-                                                }}
+                                                onClick={() => navigate('/settings')}
                                                 className="w-full text-left p-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors uppercase tracking-wider">
                                                 Settings
                                             </button>
@@ -331,7 +343,7 @@ export default function Profile() {
 
             {/* Discussion Modal */}
             <Modal open={isReplyModalOpen} setOpen={setIsReplyModalOpen}>
-                <div className="flex flex-col h-dvh md:h-[90vh] md:max-h-212.5 w-full max-w-5xl mx-auto bg-white md:rounded-[3rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.25)] relative">
+                <div className="flex flex-col h-screen md:h-[90vh] md:max-h-212.5 w-full max-w-5xl mx-auto bg-white md:rounded-[3rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.25)] relative">
                     <div className="px-4 py-4 md:px-12 md:py-10 flex items-center justify-between border-b border-stone-100 bg-white/95 backdrop-blur-md z-20 shrink-0">
                         <div className="space-y-1.5 md:space-y-1">
                             <div className="flex items-center gap-2">
@@ -376,7 +388,7 @@ export default function Profile() {
                                                     {new Date(c.createdAt).toLocaleDateString()}
                                                 </span>
                                             </div>
-                                            {user?.user?._id === c.userId?._id && (
+                                            {user?._id === c.userId?._id && (
                                                 <button className="opacity-100 md:opacity-0 group-hover:md:opacity-100 p-2 -m-1 text-stone-400 hover:text-stone-900 transition-all active:text-stone-900">
                                                     <span className="material-symbols-outlined text-lg md:text-xl">more_horiz</span>
                                                 </button>

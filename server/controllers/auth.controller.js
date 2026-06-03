@@ -13,9 +13,9 @@ export const signUp = async (req, res) => {
             password,
             dob,
             gender,
-            about,
-            pfp,
-            cover
+            about = "",
+            pfp = "",
+            cover = ""
         } = req.body;
 
         const existingUser = await User.findOne({ email });

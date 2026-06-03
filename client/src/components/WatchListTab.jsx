@@ -1,12 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getWatchList } from "../api/watchList.api";
 import { useParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { getHistory } from "../api/history.api";
+import { AnimatePresence, motion } from "framer-motion";
 import MovieCard from "./ui/MovieCard";
 import CinemaLoader from "./ui/Loader";
 
-export default function HistoryTab() {
-    const [historyData, setHistoryData] = useState([]);
+export default function WatchListTab() {
+    const [watchListData, setWatchListData] = useState([]);
     const [loading, setLoading] = useState(false);
     const { userId } = useParams();
 
@@ -14,15 +14,15 @@ export default function HistoryTab() {
     const pageRef = useRef(1);
     const hasMoreRef = useRef(true);
 
-    const fetchHistory = async (currentPage) => {
+    const fetchWatchList = async (currentPage) => {
         if (loadingRef.current || !hasMoreRef.current) return;
 
         loadingRef.current = true;
         setLoading(true);
 
         try {
-            const res = await getHistory(userId, currentPage);
-            setHistoryData(prev => [...prev, ...res.data]);
+            const res = await getWatchList(userId, currentPage);
+            setWatchListData(prev => [...prev, ...res.data]);
             hasMoreRef.current = res.hasMore;
             pageRef.current = currentPage + 1;
         } catch (error) {
@@ -31,50 +31,50 @@ export default function HistoryTab() {
             loadingRef.current = false;
             setLoading(false);
         }
-    };
+    }
 
     useEffect(() => {
-        // Reset and fetch if userId changes
-        setHistoryData([]);
-        pageRef.current = 1;
-        hasMoreRef.current = true;
-        fetchHistory(1);
-    }, [userId]);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (
-                window.innerHeight + document.documentElement.scrollTop >=
-                document.documentElement.offsetHeight - 400
-            ) {
-                fetchHistory(pageRef.current);
-            }
+            // Reset and fetch if userId changes
+            setWatchListData([]);
+            pageRef.current = 1;
+            hasMoreRef.current = true;
+            fetchWatchList(1);
+        }, [userId]);
+    
+        useEffect(() => {
+            const handleScroll = () => {
+                if (
+                    window.innerHeight + document.documentElement.scrollTop >=
+                    document.documentElement.offsetHeight - 400
+                ) {
+                    fetchWatchList(pageRef.current);
+                }
+            };
+    
+            window.addEventListener("scroll", handleScroll);
+            return () => window.removeEventListener("scroll", handleScroll);
+        }, []);
+    
+        const formatDate = (date) => {
+            return new Date(date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
         };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    const formatDate = (date) => {
-        return new Date(date).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-    };
-
-    const grouped = historyData.reduce((acc, item) => {
-        const dateKey = formatDate(item.watchedAt);
-        if (!acc[dateKey]) acc[dateKey] = [];
-        acc[dateKey].push(item);
-        return acc;
-    }, {});
+    
+        const grouped = watchListData.reduce((acc, item) => {
+            const dateKey = formatDate(item.createdAt);
+            if (!acc[dateKey]) acc[dateKey] = [];
+            acc[dateKey].push(item);
+            return acc;
+        }, {});
 
     return (
         <div className="min-h-screen pb-20">
             <AnimatePresence mode="popLayout">
                 {Object.entries(grouped).map(([date, items], sectionIndex) => (
-                    <motion.div 
+                    <motion.div
                         key={date}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -107,7 +107,7 @@ export default function HistoryTab() {
                                     />
                                     {/* Sub-label for exact time if needed */}
                                     <p className="mt-2 text-[9px] font-bold text-stone-300 uppercase tracking-widest text-center">
-                                        {new Date(h.watchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(h.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 </motion.div>
                             ))}
@@ -124,19 +124,19 @@ export default function HistoryTab() {
             )}
 
             {/* END OF HISTORY MESSAGE */}
-            {!hasMoreRef.current && historyData.length > 0 && (
+            {!hasMoreRef.current && watchListData.length > 0 && (
                 <p className="text-center text-stone-300 font-serif italic py-10">
                     You've reached the beginning of your journey.
                 </p>
             )}
 
             {/* EMPTY STATE */}
-            {!loading && historyData.length === 0 && (
+            {!loading && watchListData.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                     <div className="w-16 h-16 bg-stone-100 rounded-2xl flex items-center justify-center text-stone-300 mb-4 rotate-12">
                         <span className="material-symbols-outlined text-3xl">history</span>
                     </div>
-                    <p className="text-stone-400 font-serif italic text-lg">Watched movies will appear here.</p>
+                    <p className="text-stone-400 font-serif italic text-lg">Have no movies in watchlist yet.</p>
                 </div>
             )}
         </div>

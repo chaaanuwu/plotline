@@ -5,7 +5,8 @@ import {
     addWatchListMovie,
     removeWatchListMovie,
     getWatchListMovie,
-    isMovieWatchListed
+    isMovieWatchListed,
+    getPublicWatchListMovies
 } from "../controllers/watchList.controller.js";
 
 import authorize from "../middlewares/auth.middleware.js";
@@ -13,6 +14,8 @@ import authorize from "../middlewares/auth.middleware.js";
 const watchListRouter = Router();
 
 watchListRouter.get('/', authorize, getWatchListMovies);
+
+watchListRouter.get('/:userId', authorize, getPublicWatchListMovies);
 
 watchListRouter.get('/movie/:movieId', authorize, isMovieWatchListed);
 
