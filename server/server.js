@@ -2,8 +2,10 @@ import app from "./app.js";
 import connectToDatabase from "./database/mongodb.js";
 import { PORT } from "./config/env.js";
 
-await connectToDatabase().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+const port = process.env.PORT || PORT || 5000;
+
+await connectToDatabase();
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
