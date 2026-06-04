@@ -3,6 +3,8 @@ import { DB_URI, NODE_ENV } from "../config/env.js";
 
 if (!DB_URI) {
     throw new Error("Database URI is not defined in environment variables");
+} else {
+    console.log("mongo_URI:", DB_URI);
 }
 
 let cached = global.mongoose;
@@ -12,7 +14,6 @@ if (!cached) {
 }
 
 const connectToDatabase = async () => {
-    console.log("mongo_URI:", DB_URI);
     if (cached.conn) {
         console.log("Using cached database connection pool");
         return cached.conn;
