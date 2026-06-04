@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import useUserStore from "./store/userStore";
 
 import LoginPage from "./pages/LoginPage";
@@ -27,10 +28,10 @@ function isTokenExpired(token) {
 }
 
 export default function App() {
-    // 1. Run your auth loader hook to hydrate store from localStorage on mount
+    // Run auth loader hook to hydrate store from localStorage on mount
     useAuthLoader();
 
-    // 2. Extract global state properties reactively from Zustand
+    // Extract global state properties reactively from Zustand
     const user = useUserStore((state) => state.user);
     const isLoading = useUserStore((state) => state.isLoading);
 
@@ -44,6 +45,8 @@ export default function App() {
 
     return (
         <BrowserRouter>
+            <Analytics />
+
             {/* Navbar shows dynamically when authenticated state updates */}
             {isAuthenticated && <Navbar />}
 
@@ -102,7 +105,6 @@ export default function App() {
                     element={isAuthenticated ? <SettingsPage /> : <Navigate to="/login" replace />}
                 />
 
-                {/* Catch-all Wildcard Route */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
