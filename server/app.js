@@ -39,6 +39,16 @@ app.use(express.urlencoded({ extended: false}));
 fetchAndStoreTrending().then(() => console.log("🔥 Initial trending fetched"));
 fetchAndStoreTopRated().then(() => console.log("🔥 Initial top rated fetched"));
 
+app.get("/debug-env", (req, res) => {
+  res.json({
+    CLIENT_URL: process.env.CLIENT_URL,
+    DB_URI: !!process.env.DB_URI,
+    JWT_SECRET: !!process.env.JWT_SECRET,
+    NODE_ENV: process.env.NODE_ENV,
+    TMDB_KEY: !!process.env.TMDB_KEY
+  });
+});
+
 app.use(`${BASE_URL}/auth`, authRouter);
 app.use(`${BASE_URL}/feed`, feedRouter);
 app.use(`${BASE_URL}/user`, userRouter);
