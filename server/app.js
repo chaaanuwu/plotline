@@ -15,7 +15,7 @@ import profileRouter from './routes/features/profile.route.js';
 import movieRouter from './routes/movie.route.js';
 import tmdbRouter from './routes/tmdb.routes.js';
 import shareRouter from './routes/features/generateReviewImage.route.js';
-import "./cron/trending.cron.js";
+
 import { fetchAndStoreTrending } from './services/trending.service.js';
 import { fetchAndStoreTopRated } from './services/topRated.service.js';
 
@@ -30,17 +30,19 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false}));
 
-// Remove this line when deployed, as the cron will handle it
-fetchAndStoreTrending().then(() => console.log("🔥 Initial trending fetched"));
-fetchAndStoreTopRated().then(() => console.log("🔥 Initial top rated fetched"));
-
-app.get("/debug-env", (req, res) => {
-  res.json({
-    CLIENT_URL: process.env.CLIENT_URL,
-    DB_URI: process.env.DB_URI ? "exists" : "missing",
-    NODE_ENV: process.env.NODE_ENV
-  });
-});
+export const initializeBackgroundTasks = async () => {
+  console.log("⏳ Starting background tasks initialization...");
+  
+  try {
+    await fetchAndStoreTrending();
+    console.log("🔥 Initial trending fetched");
+    
+    await fetchAndStoreTopRated();
+    console.log("🔥 Initial top rated fetched");
+  } catch (error) {
+    console.error("❌ Failed to run initial data fetches:", error);
+  }
+};
 
 app.use(`${BASE_URL}/auth`, authRouter);
 app.use(`${BASE_URL}/feed`, feedRouter);
