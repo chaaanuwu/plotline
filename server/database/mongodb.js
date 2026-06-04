@@ -12,6 +12,7 @@ if (!cached) {
 }
 
 const connectToDatabase = async () => {
+    console.log("mongo_URI:", DB_URI);
     if (cached.conn) {
         console.log("Using cached database connection pool");
         return cached.conn;
