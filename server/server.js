@@ -7,9 +7,15 @@ const port = process.env.PORT || PORT || 5000;
 
 async function bootstrap() {
   try {
-    await connectToDatabase();
+    console.log("🚀 Bootstrapping server...");
 
+    console.log("📡 Connecting to DB...");
+    await connectToDatabase();
+    console.log("📡 DB connected");
+
+    console.log("⚙️ Starting background tasks...");
     await initializeBackgroundTasks();
+    console.log("⚙️ Background tasks ready");
 
     if (process.env.NODE_ENV !== "production") {
       app.listen(port, () => {

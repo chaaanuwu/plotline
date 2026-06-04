@@ -1,46 +1,41 @@
-import * as mongoose from "mongoose";
-import { DB_URI, NODE_ENV } from "../config/env.js";
+import mongoose from "mongoose";
+import { DB_URI } from "../config/env.js";
 
 if (!DB_URI) {
-    throw new Error("Database URI is not defined in environment variables");
-} else {
-    console.log("mongo_URI:", DB_URI);
+  throw new Error("DB_URI is missing in environment variables");
 }
 
+// Prevent multiple connections in serverless
 let cached = global.mongoose;
 
 if (!cached) {
-    cached = global.mongoose = { conn: null, promise: null };
+  cached = global.mongoose = { conn: null, promise: null };
 }
 
-const connectToDatabase = async () => {
-    if (cached.conn) {
-        console.log("Using cached database connection pool");
-        return cached.conn;
-    }
+export default async function connectToDatabase() {
+  if (cached.conn) {
+    return cached.conn;
+  }
 
-    if (!cached.promise) {
-        const opts = {
-            bufferCommands: false, 
-        };
+  if (!cached.promise) {
+    console.log("🚀 Creating new MongoDB connection...");
 
-        console.log(`Initializing new MongoDB connection pool in ${NODE_ENV || 'production'} environment...`);
-        
-        cached.promise = mongoose.connect(DB_URI, opts).then((mongooseInstance) => {
-            console.log("Database connected successfully");
-            return mongooseInstance;
-        });
-    }
+    cached.promise = mongoose.connect(DB_URI, {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+    });
+  }
 
-    try {
-        cached.conn = await cached.promise;
-    } catch (error) {
-        cached.promise = null;
-        console.error("DB connection error:", error);
-        throw error; 
-    }
+  try {
+    cached.conn = await cached.promise;
+    console.log("✅ MongoDB connected successfully");
 
     return cached.conn;
-};
-
-export default connectToDatabase;
+  } catch (err) {
+    cached.promise = null;
+    console.error("❌ MongoDB connection failed:", err);
+    throw err;
+  }
+}
