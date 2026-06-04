@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from "cors";
 
-import { BASE_URL, CLIENT_URL } from './config/env.js';
+import { BASE_URL } from './config/env.js';
 import authRouter from './routes/auth.routes.js';
 import feedRouter from './routes/feed.route.js';
 import userRouter from './routes/user.route.js';
@@ -21,13 +21,8 @@ import { fetchAndStoreTopRated } from './services/topRated.service.js';
 
 const app = express();
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  CLIENT_URL
-]
-
 app.use(cors({
-  origin: allowedOrigins,
+  origin: "http://localhost:5173",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true
 }));
@@ -38,16 +33,6 @@ app.use(express.urlencoded({ extended: false}));
 // Remove this line when deployed, as the cron will handle it
 fetchAndStoreTrending().then(() => console.log("🔥 Initial trending fetched"));
 fetchAndStoreTopRated().then(() => console.log("🔥 Initial top rated fetched"));
-
-app.get("/debug-env", (req, res) => {
-  res.json({
-    CLIENT_URL: process.env.CLIENT_URL,
-    DB_URI: !!process.env.DB_URI,
-    JWT_SECRET: !!process.env.JWT_SECRET,
-    NODE_ENV: process.env.NODE_ENV,
-    TMDB_KEY: !!process.env.TMDB_KEY
-  });
-});
 
 app.use(`${BASE_URL}/auth`, authRouter);
 app.use(`${BASE_URL}/feed`, feedRouter);

@@ -1,5 +1,5 @@
 import axios from "axios";
-import TopRatedMovies from "../models/topRated.model.js";
+import TopRatedMovies from "../models/TopRated.model.js";
 import { TMDB_BASE_URL, TMDB_KEY } from "../config/env.js";
 import Movie from "../models/movie.model.js";
 import { genreMap } from "../utils/movieGenre.utils.js";

@@ -1,4 +1,4 @@
-import TopRatedMovies from "../models/topRated.model.js";
+import TopRatedMovies from "../models/TopRated.model.js";
 import TrendingMovies from "../models/trending.model.js";
 
 // Controller to fetch trending movies
