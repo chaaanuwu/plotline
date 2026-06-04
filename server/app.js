@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from "cors";
 
-import { BASE_URL } from './config/env.js';
+import { BASE_URL, CLIENT_URL } from './config/env.js';
 import authRouter from './routes/auth.routes.js';
 import feedRouter from './routes/feed.route.js';
 import userRouter from './routes/user.route.js';
@@ -21,8 +21,13 @@ import { fetchAndStoreTopRated } from './services/topRated.service.js';
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  CLIENT_URL
+]
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true
 }));
