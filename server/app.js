@@ -15,22 +15,77 @@ import profileRouter from './routes/features/profile.route.js';
 import movieRouter from './routes/movie.route.js';
 import tmdbRouter from './routes/tmdb.routes.js';
 import shareRouter from './routes/features/generateReviewImage.route.js';
+import { ensureDbConnection } from './middlewares/db.middleware.js';
 
 import { fetchAndStoreTrending } from './services/trending.service.js';
 import { fetchAndStoreTopRated } from './services/topRated.service.js';
 
 const app = express();
 
+// CORS configuration
+const allowedOrigins = process.env.NODE_ENV === "production" 
+  ? [process.env.FRONTEND_URL || "https://yourdomain.com"]
+  : ["http://localhost:5173", "http://localhost:3000"];
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true
 }));
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false}));
+app.use(express.urlencoded({ extended: false }));
 
+// Health check endpoint (doesn't need DB)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Debug endpoint to check DB status
+app.get('/debug/db-status', async (req, res) => {
+  const mongoose = await import('mongoose');
+  res.json({
+    connectionState: mongoose.default.connection.readyState,
+    stateText: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.default.connection.readyState],
+    hasDbUri: !!process.env.DB_URI,
+    nodeEnv: process.env.NODE_ENV,
+    isVercel: !!process.env.VERCEL
+  });
+});
+
+// Apply DB connection middleware to all API routes
+app.use(`${BASE_URL}`, ensureDbConnection);
+
+// Routes
+app.use(`${BASE_URL}/auth`, authRouter);
+app.use(`${BASE_URL}/feed`, feedRouter);
+app.use(`${BASE_URL}/user`, userRouter);
+app.use(`${BASE_URL}/movies`, movieRouter);
+app.use(`${BASE_URL}/movies`, (await import('./routes/tmdb.routes.js')).default);
+app.use(`${BASE_URL}/history`, historyRouter);
+app.use(`${BASE_URL}/watchlist`, watchListRouter);
+app.use(`${BASE_URL}`, shareRouter);
+app.use(`${BASE_URL}`, profileRouter);
+app.use(`${BASE_URL}`, commentRouter);
+app.use(`${BASE_URL}`, reviewRouter);
+app.use(`${BASE_URL}`, followRouter);
+
+app.use(errorMiddleware);
+
+// Background tasks - ONLY for local development
 export const initializeBackgroundTasks = async () => {
+  // Skip on Vercel serverless
+  if (process.env.VERCEL && process.env.NODE_ENV === "production") {
+    console.log("⚠️ Skipping background tasks on Vercel serverless");
+    return;
+  }
+  
   console.log("⏳ Starting background tasks initialization...");
   
   try {
@@ -43,20 +98,5 @@ export const initializeBackgroundTasks = async () => {
     console.error("❌ Failed to run initial data fetches:", error);
   }
 };
-
-app.use(`${BASE_URL}/auth`, authRouter);
-app.use(`${BASE_URL}/feed`, feedRouter);
-app.use(`${BASE_URL}/user`, userRouter);
-app.use(`${BASE_URL}/movies`, tmdbRouter);
-app.use(`${BASE_URL}/movies`, movieRouter);
-app.use(`${BASE_URL}/history`, historyRouter);
-app.use(`${BASE_URL}/watchlist`, watchListRouter);
-app.use(`${BASE_URL}`, shareRouter);
-app.use(`${BASE_URL}`, profileRouter);
-app.use(`${BASE_URL}`, commentRouter);
-app.use(`${BASE_URL}`, reviewRouter);
-app.use(`${BASE_URL}`, followRouter);
-
-app.use(errorMiddleware);
 
 export default app;
