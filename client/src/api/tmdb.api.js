@@ -12,6 +12,6 @@ export const getTopRatedMovies = async () => {
 }
 
 export const getLandingImage = async () => {
-    const res = await axios.get(`${import.meta.env.VITE_PLOTLINE_BASE_URL}/movies/landing-img`);
+    const res = await axios.get(`${import.meta.env.VITE_PLOTLINE_BASE_URL}/tmdb/landing-img`);
     return res;
 }

@@ -23,8 +23,8 @@ import { fetchAndStoreTopRated } from './services/topRated.service.js';
 const app = express();
 
 // CORS configuration
-const allowedOrigins = process.env.NODE_ENV === "production" 
-  ? [process.env.FRONTEND_URL || "https://yourdomain.com"]
+const allowedOrigins = process.env.NODE_ENV === "production"
+  ? process.env.CLIENT_URL
   : ["http://localhost:5173", "http://localhost:3000"];
 
 app.use(cors({
@@ -67,7 +67,7 @@ app.use(`${BASE_URL}/auth`, authRouter);
 app.use(`${BASE_URL}/feed`, feedRouter);
 app.use(`${BASE_URL}/user`, userRouter);
 app.use(`${BASE_URL}/movies`, movieRouter);
-app.use(`${BASE_URL}/movies`, (await import('./routes/tmdb.routes.js')).default);
+app.use(`${BASE_URL}/tmdb`, tmdbRouter);
 app.use(`${BASE_URL}/history`, historyRouter);
 app.use(`${BASE_URL}/watchlist`, watchListRouter);
 app.use(`${BASE_URL}`, shareRouter);
