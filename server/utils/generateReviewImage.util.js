@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 /**
  * =========================
- *  __dirname FOR ESM
+ * __dirname FOR ESM
  * =========================
  */
 const __filename = fileURLToPath(import.meta.url);
@@ -185,26 +185,6 @@ export default async function generateReviewImage(data) {
         const yearWidth = ctx.measureText(year).width;
 
         /**
-         * RATING
-         */
-        const ratingX = currentX + yearWidth + 45;
-        const ratingY = titleY + 20;
-        const ratingText = `⭐ ${rating}`;
-
-        ctx.font = 'bold 36px "NotoSans"';
-        const badgeWidth = ctx.measureText(ratingText).width + 44;
-        const badgeHeight = 70;
-
-        ctx.fillStyle = 'rgba(255,193,7,0.15)';
-        drawRoundedRect(ctx, ratingX, ratingY, badgeWidth, badgeHeight, 15);
-        ctx.fill();
-
-        ctx.fillStyle = '#FFC107';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(ratingText, ratingX + 22, ratingY + badgeHeight / 2);
-        ctx.textBaseline = 'top';
-
-        /**
          * GENRES
          */
         const genresY = titleY + 130;
@@ -271,15 +251,15 @@ export default async function generateReviewImage(data) {
         });
 
         /**
-         * INTERACTION BAR
+         * INTERACTION BAR (FIXED ICONS)
          */
         const barY = posterY + posterHeight - 90;
 
-        const drawButton = (icon, count, x) => {
-            const label = `${icon} ${count}`;
+        const drawButton = (label, count, x) => {
+            const text = `${label} ${count}`;
 
             ctx.font = 'bold 30px "NotoSans"';
-            const w = ctx.measureText(label).width + 60;
+            const w = ctx.measureText(text).width + 60;
 
             ctx.fillStyle = 'rgba(255,255,255,0.08)';
             drawRoundedRect(ctx, x, barY, w, 90, 45);
@@ -287,7 +267,7 @@ export default async function generateReviewImage(data) {
 
             ctx.fillStyle = '#fff';
             ctx.textBaseline = 'middle';
-            ctx.fillText(label, x + 30, barY + 45);
+            ctx.fillText(text, x + 30, barY + 45);
 
             ctx.textBaseline = 'top';
 
@@ -295,15 +275,14 @@ export default async function generateReviewImage(data) {
         };
 
         let btnX = contentX;
-        btnX += drawButton('❤️', likeCount, btnX);
-        btnX += drawButton('💬', commentCount, btnX);
+        btnX += drawButton('LIKES', likeCount, btnX);
 
         /**
          * FOOTER
          */
         ctx.font = '18px "NotoSans"';
         ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.fillText(`🔗 ${linkToReview}`, paddingLeft, height - 80);
+        ctx.fillText(`LINK: ${linkToReview}`, paddingLeft, height - 80);
 
         if (qrCodeToReview) {
             const qrImg = await loadImage(qrCodeToReview);
