@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bg from "../assets/plotline-cover.png";
 import Footer from "../components/Footer";
@@ -10,11 +10,41 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const hasFetched = useRef(false);
 
     const { setUser } = useUserStore();
     const navigate = useNavigate();
 
-    const heroImage = sessionStorage.getItem("landingHeroImage") ? JSON.parse(sessionStorage.getItem("landingHeroImage")) : null;
+    const [heroImage, setHeroImage] = useState(() => {
+        const cached = sessionStorage.getItem("landingHeroImage");
+        return cached ? JSON.parse(cached) : null;
+    });
+
+    useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
+
+        const cached = sessionStorage.getItem("landingHeroImage");
+
+        if (cached) {
+            setHeroImage(JSON.parse(cached));
+            return;
+        }
+
+        const fetchLandingImage = async () => {
+            try {
+                const res = await getLandingImage();
+                const imgUrl = res.data?.backdropPath;
+
+                setHeroImage(imgUrl);
+                sessionStorage.setItem("landingHeroImage", JSON.stringify(imgUrl));
+            } catch (error) {
+                console.error("Error fetching landing image:", error);
+            }
+        };
+
+        fetchLandingImage();
+    }, []);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -55,8 +85,8 @@ export default function LoginPage() {
             {/* Navigation Header */}
             <nav className="fixed top-0 left-0 w-full z-50">
                 <div className="max-w-7xl mx-auto px-6 sm:px-8 h-20 flex items-center justify-between">
-                    <div 
-                        className="text-2xl sm:text-3xl font-black tracking-tighter text-white uppercase cursor-pointer select-none transition-opacity hover:opacity-90" 
+                    <div
+                        className="text-2xl sm:text-3xl font-black tracking-tighter text-white uppercase cursor-pointer select-none transition-opacity hover:opacity-90"
                         onClick={() => navigate("/")}
                     >
                         Plot<span className="text-amber-500 font-bold">Line</span>
@@ -137,7 +167,7 @@ export default function LoginPage() {
 
                     <p className="text-center text-xs text-gray-400 pt-3 font-light tracking-wide">
                         Don’t have an account?{" "}
-                        <span 
+                        <span
                             className="text-amber-500 font-medium underline underline-offset-4 cursor-pointer hover:text-amber-400 transition-colors"
                             onClick={() => navigate("/signup")}
                         >

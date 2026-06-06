@@ -24,8 +24,7 @@ const app = express();
 
 // CORS configuration
 const allowedOrigins = process.env.NODE_ENV === "production"
-  ? process.env.CLIENT_URL
-  : ["http://localhost:5173", "http://localhost:3000"];
+  ? process.env.CLIENT_URL : "http://localhost:5173";
 
 app.use(cors({
   origin: function(origin, callback) {
@@ -42,7 +41,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Health check endpoint (doesn't need DB)
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -82,11 +81,9 @@ app.use(errorMiddleware);
 export const initializeBackgroundTasks = async () => {
   // Skip on Vercel serverless
   if (process.env.VERCEL && process.env.NODE_ENV === "production") {
-    console.log("⚠️ Skipping background tasks on Vercel serverless");
+    console.log("Skipping background tasks on Vercel serverless");
     return;
   }
-  
-  console.log("⏳ Starting background tasks initialization...");
   
   try {
     await fetchAndStoreTrending();

@@ -31,11 +31,9 @@ export default function Profile() {
     
     const user = useUserStore((state) => state.user); // Object root schema source of truth
     const { userId } = useParams();
-    const navigate = useNavigate(); // Corrected Web SPA routing mechanism
+    const navigate = useNavigate();
     const commentInputRef = useRef(null);
 
-    // Safety assignment: Check if this is the user's personal view
-    // If path param userId is undefined (on /me path) or matches user._id, it's their own profile
     const isMyProfile = !userId || user?._id === userId;
 
     // Fetch profile data
@@ -118,26 +116,71 @@ export default function Profile() {
         setIsReplyModalOpen(true);
         try {
             const res = await getAllComments(review._id);
-            setComments(res.comments || res.data?.comments || []);
+            // Extract comments and ensure they have proper user data
+            let fetchedComments = res.comments || res.data?.comments || [];
+            setComments(fetchedComments);
         } catch (error) {
             console.error("Failed to fetch comments", error);
+            toast.error("Failed to load comments");
+            setComments([]);
         }
     };
 
     const handlePostComment = async () => {
-        const content = commentInputRef.current.value;
-        if (!content.trim()) return;
+        if (!selectedReview?._id) {
+            toast.error("Cannot post comment: No review selected");
+            return;
+        }
+        
+        const content = commentInputRef.current?.value;
+        if (!content?.trim()) {
+            toast.error("Comment cannot be empty");
+            return;
+        }
+
+        // Create a temporary comment with a more unique ID
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const tempComment = {
+            _id: tempId,
+            comment: content,
+            createdAt: new Date().toISOString(),
+            userId: {
+                _id: user?._id,
+                firstName: user?.firstName || "Loading...",
+                lastName: user?.lastName || "",
+                pfp: user?.pfp || defaultPfp
+            }
+        };
+        
+        // Add temp comment immediately
+        setComments(prev => [...prev, tempComment]);
+        
+        // Clear input
+        if (commentInputRef.current) {
+            commentInputRef.current.value = "";
+            commentInputRef.current.style.height = 'auto';
+        }
 
         try {
             const res = await postComment(selectedReview._id, content);
-            if (res.data?.success || res.success) {
-                const newComment = res.data?.comment || res.comment;
-                setComments(prev => [...prev, newComment]);
-                commentInputRef.current.value = "";
-                commentInputRef.current.style.height = 'auto';
+            
+            if (res && (res.status === 200 || res.status === 201 || res.success === true || res.data?.success)) {
+                toast.success("Comment posted!");
+                
+                // Fetch the actual comments from server
+                const updatedComments = await getAllComments(selectedReview._id);
+                const commentsList = updatedComments?.comments || updatedComments?.data?.comments || [];
+                setComments(commentsList);
+            } else {
+                // If post failed, remove the temp comment
+                setComments(prev => prev.filter(c => c._id !== tempId));
+                toast.error("Failed to post comment");
             }
         } catch (error) {
+            // If error, remove the temp comment
+            setComments(prev => prev.filter(c => c._id !== tempId));
             console.error("Failed to post comment", error);
+            toast.error(error?.response?.data?.message || "Failed to post comment");
         }
     };
 
@@ -366,9 +409,9 @@ export default function Profile() {
 
                     <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 md:px-16 md:py-12 space-y-6 md:space-y-10 custom-scrollbar bg-stone-50/20">
                         {comments?.length > 0 ? (
-                            comments.map((c) => (
+                            comments.map((c, index) => (
                                 <motion.div
-                                    key={c._id}
+                                    key={c?._id || `comment-${index}-${c?.createdAt || Date.now()}`}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className="flex gap-3 md:gap-6 group items-start max-w-4xl"
@@ -382,10 +425,10 @@ export default function Profile() {
                                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                                             <div className="flex flex-wrap items-center gap-2 md:gap-3">
                                                 <p className="text-sm md:text-base font-black text-stone-900">
-                                                    {c.userId?.firstName} {c.userId?.lastName}
+                                                    {c.userId?.firstName || 'Anonymous'} {c.userId?.lastName || ''}
                                                 </p>
                                                 <span className="text-[9px] md:text-[10px] font-black text-stone-400 uppercase tracking-wider">
-                                                    {new Date(c.createdAt).toLocaleDateString()}
+                                                    {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Just now'}
                                                 </span>
                                             </div>
                                             {user?._id === c.userId?._id && (

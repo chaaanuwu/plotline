@@ -9,30 +9,41 @@ import WatchListTab from "./WatchListTab";
 
 export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
     const [activeTab, setActiveTab] = useState("reviews");
-    const [tabContent, setTabContent] = useState(null);
+    const [tabContent, setTabContent] = useState({ reviews: [] });
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchTabContent = async () => {
             try {
-                if (!profileData) return;
+                if (!profileData?.user?._id) return;
+
                 setLoading(true);
 
                 let response;
+
                 if (activeTab === "reviews") {
                     response = isMyProfile
                         ? await getMyReviews()
                         : await getUserReviews(profileData.user._id);
                 }
 
-                // Placeholder for other tabs
-                if (response) {
-                    setTabContent(response.data);
-                } else {
-                    setTabContent(null);
-                }
+                const raw = response?.data;
+
+                // 🔥 NORMALIZE ALL POSSIBLE API SHAPES
+                const reviewsArray =
+                    raw?.reviews ||
+                    raw?.data?.reviews ||
+                    raw?.feed ||
+                    raw?.data ||
+                    [];
+
+                setTabContent({
+                    reviews: Array.isArray(reviewsArray) ? reviewsArray : []
+                });
+
             } catch (error) {
                 console.error("Error fetching tab content:", error);
+                setTabContent({ reviews: [] });
             } finally {
                 setLoading(false);
             }
@@ -43,7 +54,7 @@ export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
 
     return (
         <div className="w-full">
-            {/* 1. CINEMATIC TAB NAVIGATION */}
+            {/* TAB NAVIGATION */}
             <div className="border-b border-stone-100 px-6 md:px-10 bg-white/50 backdrop-blur-sm sticky top-0 z-30">
                 <div className="flex gap-10">
                     {["reviews", "history", "watchlist"].map((tab) => (
@@ -52,14 +63,18 @@ export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
                             onClick={() => setActiveTab(tab)}
                             className="relative py-6 group"
                         >
-                            <span className={`text-[10px] font-black uppercase tracking-[0.3em] transition-colors ${
-                                activeTab === tab ? "text-amber-600" : "text-stone-400 group-hover:text-stone-600"
-                            }`}>
+                            <span
+                                className={`text-[10px] font-black uppercase tracking-[0.3em] transition-colors ${
+                                    activeTab === tab
+                                        ? "text-amber-600"
+                                        : "text-stone-400 group-hover:text-stone-600"
+                                }`}
+                            >
                                 {tab}
                             </span>
-                            
+
                             {activeTab === tab && (
-                                <motion.div 
+                                <motion.div
                                     layoutId="activeTab"
                                     className="absolute bottom-0 left-0 right-0 h-1 bg-amber-600 rounded-t-full"
                                 />
@@ -69,14 +84,14 @@ export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
                 </div>
             </div>
 
-            {/* 2. CONTENT AREA */}
+            {/* CONTENT */}
             <div className="p-6 md:p-10 min-h-100">
                 <AnimatePresence mode="wait">
                     {loading ? (
-                        <motion.div 
+                        <motion.div
                             key="loader"
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 1 }} 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                         >
                             <Loader />
@@ -96,20 +111,41 @@ export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
                                         tabContent.reviews.map((r) => (
                                             <ReviewCard
                                                 key={r._id}
-                                                userId={profileData.user._id}
-                                                firstName={r.user?.firstName ?? profileData.user.firstName}
-                                                lastName={r.user?.lastName ?? profileData.user.lastName}
-                                                pfp={r.user?.pfp ?? profileData.user.pfp ?? defaultPfp}
+
+                                                currentUserId={profileData.user._id}
+                                                userId={r.user?._id || profileData.user._id}
+
+                                                firstName={
+                                                    r.user?.firstName ??
+                                                    profileData.user.firstName
+                                                }
+                                                lastName={
+                                                    r.user?.lastName ??
+                                                    profileData.user.lastName
+                                                }
+                                                pfp={
+                                                    r.user?.pfp ??
+                                                    profileData.user.pfp ??
+                                                    defaultPfp
+                                                }
+
                                                 reviewId={r?._id}
                                                 movieId={r.movieId?._id}
+
                                                 reviewDate={new Date(r.createdAt).toLocaleDateString()}
+
                                                 movieTitle={r.movieId?.title}
                                                 posterUrl={`${import.meta.env.VITE_TMDB_POSTER_BASE_URL}${r.movieId?.posterPath}`}
                                                 backdropUrl={`${import.meta.env.VITE_TMDB_BACKDROP_BASE_URL}${r.movieId?.backdropPath}`}
+
                                                 releaseYear={r.movieId?.releaseDate?.split("-")[0]}
                                                 genres={r.movieId?.genreNames}
+
                                                 reviewText={r?.review}
-                                                reviewLikes={r?.likedBy}
+
+                                                // 🔥 FIXED SAFETY
+                                                reviewLikes={r?.likedBy || []}
+
                                                 rating={r?.rating}
                                                 onReplyClick={() => onReplyClick(r)}
                                             />
@@ -121,7 +157,6 @@ export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
                             )}
 
                             {activeTab === "history" && <HistoryTab />}
-                            
                             {activeTab === "watchlist" && <WatchListTab />}
                         </motion.div>
                     )}
@@ -131,12 +166,14 @@ export default function Tabs({ profileData, isMyProfile, onReplyClick }) {
     );
 }
 
-/* Helper Component for Empty States */
+/* EMPTY STATE */
 function EmptyState({ message }) {
     return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center text-stone-300 mb-4">
-                <span className="material-symbols-outlined text-3xl">movie_filter</span>
+                <span className="material-symbols-outlined text-3xl">
+                    movie_filter
+                </span>
             </div>
             <p className="text-stone-400 font-serif italic text-lg">{message}</p>
         </div>

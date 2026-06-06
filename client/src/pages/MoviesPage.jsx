@@ -36,14 +36,7 @@ export default function MoviesPage() {
                     setTopRatedMovies(movies);
                     sessionStorage.setItem("topRatedMovies", JSON.stringify(movies));
                 }
-
-                const movies = trendingMovies;
-
-                if (movies.length > 0) {
-                    setFeaturedMovie(null);
-                    const randomIndex = Math.floor(Math.random() * movies.length);
-                    setFeaturedMovie(movies[randomIndex]);
-                }
+                
             } catch (error) {
                 console.error("Error fetching trending movies: ", error);
             } finally {
@@ -53,6 +46,16 @@ export default function MoviesPage() {
 
         fetchData();
     }, []);
+
+    useEffect(() => {
+        if (trendingMovies.length > 0) {
+            const randomIndex = Math.floor(
+                Math.random() * trendingMovies.length
+            );
+
+            setFeaturedMovie(trendingMovies[randomIndex]);
+        }
+    }, [trendingMovies]);
 
     if (loading || !featuredMovie) return <Loader />;
 

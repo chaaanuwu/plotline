@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import bg from "../assets/plotline-cover.png";
 import { toast } from "sonner";
 import useUserStore from "../store/userStore";
@@ -7,19 +7,48 @@ import { signIn, signUp } from "../api/auth.api";
 export default function SignUpPage() {
     const [step, setStep] = useState(1);
     const [error, setError] = useState("");
+    const hasFetched = useRef(false);
 
     // Access store values safely through standard reactive selectors
     const user = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
 
-    const heroImage = sessionStorage.getItem("landingHeroImage") ? JSON.parse(sessionStorage.getItem("landingHeroImage")) : null;
+    const [heroImage, setHeroImage] = useState(() => {
+        const cached = sessionStorage.getItem("landingHeroImage");
+        return cached ? JSON.parse(cached) : null;
+    });
 
-    // Auto-routing guard clause: If user session is active, push them out
     useEffect(() => {
         if (user) {
-            window.location.href = "/"; // Adjust matching your route layout
+            window.location.href = "/";
         }
     }, [user]);
+
+    useEffect(() => {
+        if (hasFetched.current) return;
+        hasFetched.current = true;
+
+        const cached = sessionStorage.getItem("landingHeroImage");
+
+        if (cached) {
+            setHeroImage(JSON.parse(cached));
+            return;
+        }
+
+        const fetchLandingImage = async () => {
+            try {
+                const res = await getLandingImage();
+                const imgUrl = res.data?.backdropPath;
+
+                setHeroImage(imgUrl);
+                sessionStorage.setItem("landingHeroImage", JSON.stringify(imgUrl));
+            } catch (error) {
+                console.error("Error fetching landing image:", error);
+            }
+        };
+
+        fetchLandingImage();
+    }, []);
 
     // Form states
     const [formData, setFormData] = useState({
@@ -88,7 +117,6 @@ export default function SignUpPage() {
         try {
             const formattedEmail = formData.email.toLowerCase();
 
-            // 1. Submit Registration Payload
             const signupRes = await signUp(
                 formData.firstName,
                 formData.lastName,
@@ -102,18 +130,15 @@ export default function SignUpPage() {
             const isSignupSuccess = signupRes?.success || signupRes?.data?.success || signupRes?.status === "success";
 
             if (isSignupSuccess) {
-                // 2. Automatically trigger session login pipeline
                 const loginRes = await signIn(formattedEmail, formData.password);
-                
-                // Unpack variables with robust safety structures
+
                 const targetToken = loginRes?.token || loginRes?.data?.token;
                 const targetUser = loginRes?.user || loginRes?.data?.user;
 
                 if (targetToken && targetUser) {
                     localStorage.setItem("token", targetToken);
-                    
-                    // FIXED: Setting user safely using React lifecycle actions
-                    setUser(targetUser); 
+
+                    setUser(targetUser);
                     toast.success("Welcome to PlotLine! Account created successfully.");
                 } else {
                     throw new Error("Account created but automatic authentication failed. Please sign in manually.");
@@ -175,7 +200,7 @@ export default function SignUpPage() {
 
                 {/* Conditionally Render Form Subsections based on local step state */}
                 <form onSubmit={step === 3 ? handleFinalSubmit : handleNextStep} className="space-y-4">
-                    
+
                     {/* STEP 1: ACCOUNT BASICS */}
                     {step === 1 && (
                         <div className="space-y-4 animate-fade-in">
@@ -298,9 +323,8 @@ export default function SignUpPage() {
                         )}
                         <button
                             type="submit"
-                            className={`py-3 rounded-xl bg-white text-black font-semibold text-sm tracking-wide shadow-xl hover:bg-gray-100 active:scale-[0.99] transition-all duration-200 ${
-                                step === 1 ? "w-full" : "grow"
-                            }`}
+                            className={`py-3 rounded-xl bg-white text-black font-semibold text-sm tracking-wide shadow-xl hover:bg-gray-100 active:scale-[0.99] transition-all duration-200 ${step === 1 ? "w-full" : "grow"
+                                }`}
                         >
                             {step === 3 ? "Complete Registration" : "Continue"}
                         </button>

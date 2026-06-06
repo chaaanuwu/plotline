@@ -9,7 +9,13 @@ export default function Dropdown({ open, children }) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.25 }}
-                    className="absolute top-full right-0 mt-2 bg-white shadow-md rounded-xl p-1 z-50 border-2 border-stone-100"
+                    className="
+                        absolute top-full
+                        left-1/2 -translate-x-1/2
+                        sm:left-auto sm:right-0 sm:translate-x-0
+                        mt-2 bg-white shadow-md rounded-xl p-1
+                        z-50 border-2 border-stone-100
+                    "
                 >
                     {children}
                 </motion.div>

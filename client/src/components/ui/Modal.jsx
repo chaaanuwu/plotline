@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect } from "react";
 
-export default function Modal({ open, setOpen, children }) {
+export default function Modal({ open, setOpen, children, className }) {
 
   // Disable background scrolling when modal is open
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function Modal({ open, setOpen, children }) {
       {open && (
         /* Backdrop */
         <div
-          className="fixed inset-0 z-100 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4pointer-events-auto"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm p-4 pointer-events-auto"
           onClick={() => setOpen(false)}
         >
           {/* Content Container (Stop propagation so clicking inside doesn't close) */}
@@ -29,7 +29,7 @@ export default function Modal({ open, setOpen, children }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-7xl pointer-events-auto"
+            className={`w-full max-w-7xl pointer-events-auto justify-center items-center ${className || ''}`}
           >
             {children}
           </motion.div>
