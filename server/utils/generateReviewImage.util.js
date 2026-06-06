@@ -1,4 +1,38 @@
-import { createCanvas, loadImage } from 'canvas';
+import { createCanvas, loadImage, registerFont } from 'canvas';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Try to register fonts, but don't crash if they're not available
+const fontsPath = path.join(__dirname, '..', 'fonts');
+
+try {
+    if (fs.existsSync(fontsPath)) {
+        const regularFontPath = path.join(fontsPath, 'Arial-Regular.ttf');
+        const boldFontPath = path.join(fontsPath, 'Arial-Bold.ttf');
+        
+        if (fs.existsSync(regularFontPath)) {
+            registerFont(regularFontPath, { family: 'Arial', weight: 'normal' });
+            console.log('✅ Registered Arial-Regular.ttf');
+        } else {
+            console.log('⚠️ Arial-Regular.ttf not found, using default system font');
+        }
+        
+        if (fs.existsSync(boldFontPath)) {
+            registerFont(boldFontPath, { family: 'Arial', weight: 'bold' });
+            console.log('✅ Registered Arial-Bold.ttf');
+        } else {
+            console.log('⚠️ Arial-Bold.ttf not found, using default system font');
+        }
+    } else {
+        console.log('⚠️ Fonts folder not found at:', fontsPath, '- using default system fonts');
+    }
+} catch (error) {
+    console.error('Font registration error (non-fatal):', error.message);
+}
 
 /**
  * Helper function to wrap text for the review body
@@ -67,7 +101,7 @@ export default async function generateReviewImage(data) {
             reviewDate = "Today",
             likeCount = "0",
             commentCount = "0",
-            linkToReview="#",
+            linkToReview = "#",
             qrCodeToReview
         } = data;
 
@@ -77,8 +111,12 @@ export default async function generateReviewImage(data) {
         const ctx = canvas.getContext('2d');
 
         const safeLoad = async (url) => {
-            try { return await loadImage(url); }
-            catch (e) { return await loadImage('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='); }
+            try { 
+                return await loadImage(url); 
+            }
+            catch (e) { 
+                return await loadImage('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='); 
+            }
         };
 
         const [bg, poster, avatar] = await Promise.all([
@@ -120,14 +158,14 @@ export default async function generateReviewImage(data) {
 
         // Title: Bold and White
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 100px "Arial", sans-serif';
+        ctx.font = 'bold 100px "Arial", "Helvetica", "sans-serif"';
         ctx.fillText(title, contentX, titleY);
         const titleWidth = ctx.measureText(title).width;
 
         // Year: Light and Faded
         let currentX = contentX + titleWidth + 30;
         ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-        ctx.font = '300 100px "Arial", sans-serif'; 
+        ctx.font = '300 100px "Arial", "Helvetica", "sans-serif"'; 
         ctx.fillText(year, currentX, titleY);
         const yearWidth = ctx.measureText(year).width;
 
@@ -136,7 +174,7 @@ export default async function generateReviewImage(data) {
         const ratingY = titleY + 20; 
         const ratingText = `⭐ ${rating}`;
         
-        ctx.font = 'bold 36px "Arial", sans-serif';
+        ctx.font = 'bold 36px "Arial", "Helvetica", "sans-serif"';
         const badgeWidth = ctx.measureText(ratingText).width + 44;
         const badgeHeight = 70;
 
@@ -156,7 +194,7 @@ export default async function generateReviewImage(data) {
         const genresY = titleY + 130;
         let genresX = contentX;
         genres.forEach(g => {
-            ctx.font = '30px "Arial", sans-serif';
+            ctx.font = '30px "Arial", "Helvetica", "sans-serif"';
             const gTextWidth = ctx.measureText(g).width;
             const gW = gTextWidth + 40;
             const gH = 55;
@@ -173,17 +211,17 @@ export default async function generateReviewImage(data) {
         // --- 5. User Profile ---
         const userY = genresY + 110;
         drawCircularImage(ctx, avatar, contentX, userY, 45);
-        ctx.font = 'bold 40px "Arial", sans-serif';
+        ctx.font = 'bold 40px "Arial", "Helvetica", "sans-serif"';
         ctx.fillStyle = '#FFFFFF';
         ctx.fillText(username, contentX + 115, userY + 8);
-        ctx.font = '28px "Arial", sans-serif';
+        ctx.font = '28px "Arial", "Helvetica", "sans-serif"';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
         ctx.fillText(reviewDate, contentX + 115, userY + 55);
 
         // --- 6. Review Text (Limited to 4 lines with Ellipsis) ---
         const reviewY = userY + 130;
         const lineSpacing = 55;
-        ctx.font = '34px "Arial", sans-serif';
+        ctx.font = '34px "Arial", "Helvetica", "sans-serif"';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         
         let lines = wrapText(ctx, reviewText, maxContentWidth);
@@ -208,7 +246,7 @@ export default async function generateReviewImage(data) {
         const barY = posterY + posterHeight - 90;
         const drawButton = (icon, count, x) => {
             const label = `${icon}  ${count}`;
-            ctx.font = 'bold 30px "Arial", sans-serif';
+            ctx.font = 'bold 30px "Arial", "Helvetica", "sans-serif"';
             const bWidth = ctx.measureText(label).width + 60;
             ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
             drawRoundedRect(ctx, x, barY, bWidth, 90, 45);
@@ -225,7 +263,7 @@ export default async function generateReviewImage(data) {
         btnX += drawButton('💬', commentCount, btnX);
 
         // --- 8. Link to Review (Small Text at the Bottom) ---
-        ctx.font = '18px "Arial", sans-serif';
+        ctx.font = '18px "Arial", "Helvetica", "sans-serif"';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         ctx.fillText(`🔗 ${linkToReview}`, paddingLeft, height - 80);
 
