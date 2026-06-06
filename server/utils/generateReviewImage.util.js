@@ -1,65 +1,70 @@
 import { createCanvas, loadImage, registerFont } from 'canvas';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
+/**
+ * =========================
+ *  __dirname FOR ESM
+ * =========================
+ */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Try to register fonts, but don't crash if they're not available
-const fontsPath = path.join(__dirname, '..', 'fonts');
+/**
+ * =========================
+ * FONT REGISTRATION
+ * =========================
+ */
+const fontDir = path.join(__dirname, '..', 'fonts');
+
+const regularFont = path.join(fontDir, 'Arial Regular.ttf');
+const boldFont = path.join(fontDir, 'Arial Bold.ttf');
 
 try {
-    if (fs.existsSync(fontsPath)) {
-        const regularFontPath = path.join(fontsPath, 'Arial-Regular.ttf');
-        const boldFontPath = path.join(fontsPath, 'Arial-Bold.ttf');
-        
-        if (fs.existsSync(regularFontPath)) {
-            registerFont(regularFontPath, { family: 'Arial', weight: 'normal' });
-            console.log('✅ Registered Arial-Regular.ttf');
-        } else {
-            console.log('⚠️ Arial-Regular.ttf not found, using default system font');
-        }
-        
-        if (fs.existsSync(boldFontPath)) {
-            registerFont(boldFontPath, { family: 'Arial', weight: 'bold' });
-            console.log('✅ Registered Arial-Bold.ttf');
-        } else {
-            console.log('⚠️ Arial-Bold.ttf not found, using default system font');
-        }
+    if (fs.existsSync(regularFont)) {
+        registerFont(regularFont, { family: 'NotoSans' });
+        console.log('✅ Regular font loaded');
     } else {
-        console.log('⚠️ Fonts folder not found at:', fontsPath, '- using default system fonts');
+        console.log('⚠️ Regular font not found:', regularFont);
     }
-} catch (error) {
-    console.error('Font registration error (non-fatal):', error.message);
+
+    if (fs.existsSync(boldFont)) {
+        registerFont(boldFont, { family: 'NotoSans', weight: 'bold' });
+        console.log('✅ Bold font loaded');
+    } else {
+        console.log('⚠️ Bold font not found:', boldFont);
+    }
+} catch (err) {
+    console.error('Font registration error:', err.message);
 }
 
 /**
- * Helper function to wrap text for the review body
+ * =========================
+ * HELPERS
+ * =========================
  */
 function wrapText(ctx, text, maxWidth) {
     const words = text.split(' ');
     let line = '';
     const lines = [];
 
-    for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' ';
+    for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i] + ' ';
         const metrics = ctx.measureText(testLine);
-        
-        if (metrics.width > maxWidth && n > 0) {
+
+        if (metrics.width > maxWidth && i > 0) {
             lines.push(line.trim());
-            line = words[n] + ' ';
+            line = words[i] + ' ';
         } else {
             line = testLine;
         }
     }
+
     if (line.trim()) lines.push(line.trim());
     return lines;
 }
 
-/**
- * Draw rounded rectangle
- */
 function drawRoundedRect(ctx, x, y, width, height, radius) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -74,9 +79,6 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
     ctx.closePath();
 }
 
-/**
- * Draw a circular image (Avatar)
- */
 function drawCircularImage(ctx, img, x, y, radius) {
     ctx.save();
     ctx.beginPath();
@@ -86,6 +88,11 @@ function drawCircularImage(ctx, img, x, y, radius) {
     ctx.restore();
 }
 
+/**
+ * =========================
+ * MAIN IMAGE GENERATOR
+ * =========================
+ */
 export default async function generateReviewImage(data) {
     try {
         const {
@@ -111,11 +118,12 @@ export default async function generateReviewImage(data) {
         const ctx = canvas.getContext('2d');
 
         const safeLoad = async (url) => {
-            try { 
-                return await loadImage(url); 
-            }
-            catch (e) { 
-                return await loadImage('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='); 
+            try {
+                return await loadImage(url);
+            } catch {
+                return await loadImage(
+                    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+                );
             }
         };
 
@@ -125,7 +133,6 @@ export default async function generateReviewImage(data) {
             safeLoad(userAvatarUrl)
         ]);
 
-        // Layout Constants
         const paddingLeft = 140;
         const posterWidth = 470;
         const posterHeight = 700;
@@ -133,17 +140,22 @@ export default async function generateReviewImage(data) {
         const contentX = paddingLeft + posterWidth + 100;
         const maxContentWidth = width - contentX - 140;
 
-        // --- 1. Background ---
+        /**
+         * BACKGROUND
+         */
         ctx.drawImage(bg, 0, 0, width, height);
+
         const overlay = ctx.createLinearGradient(0, 0, 0, height);
-        overlay.addColorStop(0, 'rgba(0, 0, 0, 0.5)');
-        overlay.addColorStop(1, 'rgba(0, 0, 0, 0.9)');
+        overlay.addColorStop(0, 'rgba(0,0,0,0.5)');
+        overlay.addColorStop(1, 'rgba(0,0,0,0.9)');
         ctx.fillStyle = overlay;
         ctx.fillRect(0, 0, width, height);
 
-        // --- 2. Poster ---
+        /**
+         * POSTER
+         */
         ctx.save();
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
         ctx.shadowBlur = 60;
         ctx.shadowOffsetY = 30;
         drawRoundedRect(ctx, paddingLeft, posterY, posterWidth, posterHeight, 25);
@@ -151,133 +163,157 @@ export default async function generateReviewImage(data) {
         ctx.drawImage(poster, paddingLeft, posterY, posterWidth, posterHeight);
         ctx.restore();
 
-        // --- 3. Header Row (Title, Year, Rating) ---
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
+        /**
+         * TITLE + YEAR
+         */
         const titleY = posterY + 10;
 
-        // Title: Bold and White
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 100px "Arial", "Helvetica", "sans-serif"';
-        ctx.fillText(title, contentX, titleY);
-        const titleWidth = ctx.measureText(title).width;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
 
-        // Year: Light and Faded
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 100px "NotoSans"';
+        ctx.fillText(title, contentX, titleY);
+
+        const titleWidth = ctx.measureText(title).width;
         let currentX = contentX + titleWidth + 30;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-        ctx.font = '300 100px "Arial", "Helvetica", "sans-serif"'; 
+
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.font = '300 100px "NotoSans"';
         ctx.fillText(year, currentX, titleY);
+
         const yearWidth = ctx.measureText(year).width;
 
-        // Rating Badge
+        /**
+         * RATING
+         */
         const ratingX = currentX + yearWidth + 45;
-        const ratingY = titleY + 20; 
+        const ratingY = titleY + 20;
         const ratingText = `⭐ ${rating}`;
-        
-        ctx.font = 'bold 36px "Arial", "Helvetica", "sans-serif"';
+
+        ctx.font = 'bold 36px "NotoSans"';
         const badgeWidth = ctx.measureText(ratingText).width + 44;
         const badgeHeight = 70;
 
-        ctx.fillStyle = 'rgba(255, 193, 7, 0.15)'; 
+        ctx.fillStyle = 'rgba(255,193,7,0.15)';
         drawRoundedRect(ctx, ratingX, ratingY, badgeWidth, badgeHeight, 15);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 193, 7, 0.4)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
 
         ctx.fillStyle = '#FFC107';
         ctx.textBaseline = 'middle';
-        ctx.fillText(ratingText, ratingX + 22, ratingY + (badgeHeight / 2));
+        ctx.fillText(ratingText, ratingX + 22, ratingY + badgeHeight / 2);
         ctx.textBaseline = 'top';
 
-        // --- 4. Genres ---
+        /**
+         * GENRES
+         */
         const genresY = titleY + 130;
         let genresX = contentX;
+
         genres.forEach(g => {
-            ctx.font = '30px "Arial", "Helvetica", "sans-serif"';
-            const gTextWidth = ctx.measureText(g).width;
-            const gW = gTextWidth + 40;
-            const gH = 55;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-            drawRoundedRect(ctx, genresX, genresY, gW, gH, 12);
+            ctx.font = '30px "NotoSans"';
+
+            const textWidth = ctx.measureText(g).width;
+            const boxW = textWidth + 40;
+            const boxH = 55;
+
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            drawRoundedRect(ctx, genresX, genresY, boxW, boxH, 12);
             ctx.fill();
-            ctx.fillStyle = '#FFFFFF';
+
+            ctx.fillStyle = '#fff';
             ctx.textBaseline = 'middle';
-            ctx.fillText(g, genresX + 20, genresY + gH / 2);
-            genresX += gW + 15;
+            ctx.fillText(g, genresX + 20, genresY + boxH / 2);
+
+            genresX += boxW + 15;
         });
+
         ctx.textBaseline = 'top';
 
-        // --- 5. User Profile ---
+        /**
+         * USER
+         */
         const userY = genresY + 110;
+
         drawCircularImage(ctx, avatar, contentX, userY, 45);
-        ctx.font = 'bold 40px "Arial", "Helvetica", "sans-serif"';
-        ctx.fillStyle = '#FFFFFF';
+
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 40px "NotoSans"';
         ctx.fillText(username, contentX + 115, userY + 8);
-        ctx.font = '28px "Arial", "Helvetica", "sans-serif"';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '28px "NotoSans"';
         ctx.fillText(reviewDate, contentX + 115, userY + 55);
 
-        // --- 6. Review Text (Limited to 4 lines with Ellipsis) ---
+        /**
+         * REVIEW TEXT
+         */
         const reviewY = userY + 130;
         const lineSpacing = 55;
-        ctx.font = '34px "Arial", "Helvetica", "sans-serif"';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        
+
+        ctx.font = '34px "NotoSans"';
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+
         let lines = wrapText(ctx, reviewText, maxContentWidth);
         const maxLines = 4;
 
         lines.slice(0, maxLines).forEach((line, i) => {
-            let textToDraw = line;
-            
-            // If we are on the 4th line and there are more lines remaining
+            let text = line;
+
             if (i === maxLines - 1 && lines.length > maxLines) {
-                // Remove characters until the line + "..." fits
-                while (ctx.measureText(textToDraw + "...").width > maxContentWidth && textToDraw.length > 0) {
-                    textToDraw = textToDraw.substring(0, textToDraw.length - 1);
+                while (ctx.measureText(text + '...').width > maxContentWidth) {
+                    text = text.slice(0, -1);
                 }
-                textToDraw += "...";
+                text += '...';
             }
-            
-            ctx.fillText(textToDraw, contentX, reviewY + (i * lineSpacing));
+
+            ctx.fillText(text, contentX, reviewY + i * lineSpacing);
         });
 
-        // --- 7. Interaction Bar ---
+        /**
+         * INTERACTION BAR
+         */
         const barY = posterY + posterHeight - 90;
+
         const drawButton = (icon, count, x) => {
-            const label = `${icon}  ${count}`;
-            ctx.font = 'bold 30px "Arial", "Helvetica", "sans-serif"';
-            const bWidth = ctx.measureText(label).width + 60;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-            drawRoundedRect(ctx, x, barY, bWidth, 90, 45);
+            const label = `${icon} ${count}`;
+
+            ctx.font = 'bold 30px "NotoSans"';
+            const w = ctx.measureText(label).width + 60;
+
+            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            drawRoundedRect(ctx, x, barY, w, 90, 45);
             ctx.fill();
-            ctx.fillStyle = '#FFFFFF';
+
+            ctx.fillStyle = '#fff';
             ctx.textBaseline = 'middle';
             ctx.fillText(label, x + 30, barY + 45);
+
             ctx.textBaseline = 'top';
-            return bWidth + 20;
+
+            return w + 20;
         };
 
         let btnX = contentX;
         btnX += drawButton('❤️', likeCount, btnX);
         btnX += drawButton('💬', commentCount, btnX);
 
-        // --- 8. Link to Review (Small Text at the Bottom) ---
-        ctx.font = '18px "Arial", "Helvetica", "sans-serif"';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        /**
+         * FOOTER
+         */
+        ctx.font = '18px "NotoSans"';
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
         ctx.fillText(`🔗 ${linkToReview}`, paddingLeft, height - 80);
 
-        // --- 9. QR Code (Placed at the Bottom Right) ---
         if (qrCodeToReview) {
             const qrImg = await loadImage(qrCodeToReview);
-            const qrSize = 125;
-            ctx.drawImage(qrImg, width - paddingLeft - qrSize, height - 80 - qrSize, qrSize, qrSize);
+            ctx.drawImage(qrImg, width - paddingLeft - 125, height - 205, 125, 125);
         }
 
         return canvas.toBuffer('image/png');
 
-    } catch (error) {
-        console.error('Error generating image:', error);
-        throw error;
+    } catch (err) {
+        console.error('Error generating image:', err);
+        throw err;
     }
 }
