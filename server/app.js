@@ -87,12 +87,12 @@ export const initializeBackgroundTasks = async () => {
   
   try {
     await fetchAndStoreTrending();
-    console.log("🔥 Initial trending fetched");
+    console.log("Initial trending fetched");
     
     await fetchAndStoreTopRated();
-    console.log("🔥 Initial top rated fetched");
+    console.log("Initial top rated fetched");
   } catch (error) {
-    console.error("❌ Failed to run initial data fetches:", error);
+    console.error("Failed to run initial data fetches:", error);
   }
 };
 
