@@ -1,5 +1,7 @@
 import TopRatedMovies from "../models/topRated.model.js";
 import TrendingMovies from "../models/trending.model.js";
+import { fetchAndStoreTopRated } from "../services/topRated.service.js";
+import { fetchAndStoreTrending } from "../services/trending.service.js";
 
 // Controller to fetch trending movies
 export const getTrendingMovies = async (req, res) => {
@@ -11,6 +13,8 @@ export const getTrendingMovies = async (req, res) => {
 
     // fallback if today not available
     if (!trending) {
+      await fetchAndStoreTrending();
+
       trending = await TrendingMovies.findOne()
         .sort({ createdAt: -1 })
         .populate("movies");
@@ -33,6 +37,8 @@ export const getTopRatedMovies = async (req, res) => {
 
     // fallback if today not available
     if (!topRated) {
+      await fetchAndStoreTopRated();
+
       topRated = await TopRatedMovies.findOne()
         .sort({ createdAt: -1 })
         .populate("movies");
