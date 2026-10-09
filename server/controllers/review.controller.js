@@ -6,7 +6,11 @@ export const getAllUserReviews = async (req, res) => {
         const userId = req.params.userId || req.query.userId || req.user.userId;
 
         const reviews = await Review.find({ userId })
-            .populate('movieId', '_id title posterPath backdropPath releaseDate genreNames');
+            .populate("userId", "firstName lastName pfp")
+            .populate(
+                "movieId",
+                "_id title posterPath backdropPath releaseDate genreNames"
+            );
 
         if (!reviews || reviews.length === 0) {
             return res.status(200).json({
